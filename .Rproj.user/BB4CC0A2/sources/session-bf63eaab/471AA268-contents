@@ -4,7 +4,7 @@
 # PURPOSE:  Simulate the performance of NS Estimator with clean data. Compare it with
 #           purely fast and separable estimator
 # AUTHOR:   Sudhir T
-# DATE:     4th May, 2026 XXXXXXXXXXXXXXXXXXXXX
+# DATE:     4th May, 2026 
 # ==============================================================================
 
 rm(list = ls())
