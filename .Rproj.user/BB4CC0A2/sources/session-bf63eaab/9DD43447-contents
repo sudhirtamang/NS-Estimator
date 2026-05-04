@@ -1,0 +1,380 @@
+# this code obtains the "Separate" estimators for Model 7 in Table 1 in the supplementary material.
+
+rm(list = ls())
+# install.packages("Tlasso")
+# install.packages("tensr")
+# install.packages("glasso")
+# install.packages("expm")
+# install.packages("rTensor")
+# install.packages("doParallel")
+
+library(Tlasso)
+library(tensr)
+library(glasso)
+library(expm)
+library(rTensor)
+library(doParallel)
+
+source("Separate.fit.R") 
+source("cv.Separate.R") 
+source("simulation.summary.R") 
+source("Model7.R")
+
+
+# Model setting
+n <- 200 # sample size
+dimen <- c(30, 36, 30) # dimension of tensor
+nvars <- prod(dimen) # number of variables
+K <- 3 # order of tensor
+run <- 1
+pctOut <- 0.1
+
+# set-up of precision matrices
+Sigma <- array(list(), length(dimen)) # a list of covariance matrices
+Omega <- array(list(), length(dimen)) # a list of precision matrices
+dSigma <- array(list(), length(dimen)) # a list of square root of covariance matrices
+
+for (i in 1:length(dimen)) {
+  Omega[[i]] <- ChainOmega(dimen[i], sd = i * 100, norm.type = 2) 
+  Sigma[[i]] <- solve(Omega[[i]])
+  dSigma[[i]] <- t(chol(Sigma[[i]]))
+}
+
+# Number of replicates. Please set it to 100 to reproduce the simulation results for Model 7.
+Run <- 1
+# Run <- 100
+
+# initialize measurements
+d <- 1
+av.error.f <- array(0, dim = c(Run, d)) # averaged estimation error in Frobenius norm
+av.error.max <- array(0, dim = c(Run, d)) # averaged estimation error in Maximum norm
+av.tpr <- array(0, dim = c(Run, d)) # averaged true positive rate
+av.tnr <- array(0, dim = c(Run, d)) # averaged true negative rate
+
+d <- 3
+error.f <- array(0, dim = c(Run, d)) # estimation error in Frobenius norm for each mode
+error.max <- array(0, dim = c(Run, d)) # estimation error in Maximum norm for each mode
+tpr <- array(0, dim = c(Run, d)) # true positive rate for each mode
+tnr <- array(0, dim = c(Run, d)) # true negative rate for each mode
+
+
+for (run in 1:Run) { 
+  print(run)
+  # Generate training set and validation set
+  data <- Model7(n, run * 123456)
+  x <- data[[1]]$x
+  vax <- data[[1]]$vax
+  Sigma <- data[[2]]
+  Omega <- data[[3]]
+  # proper candidates of tuning parameters
+  # lamseq <- seq(0.015, 0.1, length.out = 10)
+  lamseq <- seq(0.0000000015, 2e-5, length.out = 50)
+  lambda.list <- list() # a list containing candidates of tuning parameters for each mode 
+  for (i in 1:K) {
+    lambda.list[[i]] <- lamseq
+  }
+  
+  
+  nOut <- ceiling(pctOut * n)
+  idxcontami <- sample(n, nOut)
+  contami <- rt(nOut*nvars, df=10)
+  dim(contami) <- c(dimen, nOut)
+  
+  contamiDatax <- x[]
+  for(i in seq_along(idxcontami)){
+    contamiDatax[, , , idxcontami[i]] <- contami[, , , i]
+  }
+  TcontamiData <- NSEstimator(contamiDatax, dimen)
+  
+  
+  vax_contamiData <- vax[]
+  for(i in seq_along(idxcontami)){
+    vax_contamiData[, , , idxcontami[i]] <- contami[, , , i]
+  }
+  vax_TcontamiData <- NSEstimator(vax_contamiData, dimen)
+  
+  Tx <- NSEstimator(x, dimen)
+  Tvax <- NSEstimator(vax, dimen)
+  # Model fitting
+  
+  
+  # rcovDIFF <- vector("double", 39)
+  # tmp1 <- vector("double", prod(dimen) * prod(dimen))
+  # i <- 0
+  # for(i1 in 1:8){
+  #   for(j1 in 25:36){
+  #     for(k1 in 20:30){
+  #       for(i2 in 8:17){
+  #         for(j2 in 9:13){
+  #           for(k2 in 10:18){
+  #             i <- i + 1
+  #           }
+  #         }
+  #       }
+  #     }
+  #   }
+  # }
+  # 
+  # est_Sigma <- Separate.fit(x, vax, lambda.list = lambda.list)
+  # rcovDIFF <- vector("double", i)
+  # tmp1 <- vector("double", i)
+  # tmp2 <- vector("double", i)
+  # i <- 0
+  # for(i1 in 1:8){
+  #   for(j1 in 25:36){
+  #     for(k1 in 20:30){
+  #       for(i2 in 8:17){
+  #         for(j2 in 9:13){
+  #           for(k2 in 10:18){
+  #             i <- i + 1
+  #             tmp1[[i]] <- est_Sigma[[1]][i1, i2] * est_Sigma[[2]][j1, j2] * est_Sigma[[3]][k1, k2]
+  #             tmp2[[i]] <- Sigma[[1]][i1, i2] * Sigma[[2]][j1, j2] * Sigma[[3]][k1, k2]
+  #             rcovDIFF[[i]] <- tmp1[[i]] - tmp2[[i]]
+  #           }
+  #         }
+  #       }
+  #     }
+  #   }
+  # }
+  # 
+  # print(i)
+  # plot(tmp2, tmp1, cex=0.6)
+  fit_resx <- Separate.fit(x, vax, lambda.list = lambda.list)
+  # fit_res <- Separate.fit(TcontamiData, vax_TcontamiData, lambda.list = lambda.list)
+  fit_resTx <- Separate.fit(Tx, Tvax, lambda.list = lambda.list)
+  est_Sigmax <- purrr::map(fit_resx, \(x) x[[2]])
+  est_SigmaTx <- purrr::map(fit_resTx, \(x) x[[2]])
+  est_Omegax <- purrr::map(fit_resx, \(x) x[[1]])
+  est_OmegaTx <- purrr::map(fit_resTx, \(x) x[[1]])
+  
+  
+  
+  simulation.summary(est_Sigmax, Sigma, offdiag = FALSE)
+  simulation.summary(est_SigmaTx, Sigma, offdiag = FALSE)
+  simulation.summary(est_Omegax, Omega, offdiag = FALSE)
+  simulation.summary(est_OmegaTx, Omega, offdiag = FALSE)
+  # simulation.summary(est_SigmaTx, Sigma, offdiag = FALSE)
+  Omegahat <- purrr::map(fit_res, \(x) x[[1]])
+  # est_Sigma <- Separate.fit(x, vax, lambda.list = lambda.list)
+  # tmp1 <- vector("double", prod(dimen) ** 2)
+  # tmp2 <- vector("double", prod(dimen) ** 2)
+  # i <- 0
+  Gt10times <- 0
+  Gt20times <- 0
+  Gt30times <- 0
+  Gt40times <- 0
+  Gt50times <- 0
+  Gt60times <- 0
+  Gt1000times <- 0
+  Gt10000times <- 0
+  
+  nGt10times <- 0
+  nGt20times <- 0
+  nGt30times <- 0
+  nGt40times <- 0
+  nGt50times <- 0
+  nGt60times <- 0
+  nGt1000times <- 0
+  nGt10000times <- 0
+  negativeRatio <- 0
+  estless <- 0
+  
+  est_cov_for_zero <- rep_len(NA_real_, prod(dimen)**2)
+  arr_ratio <- rep_len(0, prod(dimen)**2)
+  i <- 0
+  j <- 0
+  for(i1 in 1:30){
+    for(j1 in 1:36){
+      for(k1 in 1:30){
+        for(i2 in 1:30){
+          for(j2 in 1:36){
+            for(k2 in 1:30){
+              # i <- i + 1
+              tmp1 <- est_Sigmax[[1]][i1, i2] * est_Sigmax[[2]][j1, j2] * est_Sigmax[[3]][k1, k2]
+              tmp2 <- Sigma[[1]][i1, i2] * Sigma[[2]][j1, j2] * Sigma[[3]][k1, k2]
+              
+              j <- j + 1
+              arr_ratio[[j]] <- tmp2/tmp1
+              if(tmp2 == 0){
+                i <- i + 1
+              } else {
+                ratio <- tmp2/tmp1
+
+                if(ratio > 10) Gt10times <- Gt10times + 1
+                if(ratio > 20) Gt20times <- Gt20times + 1
+                if(ratio > 30) Gt30times <- Gt30times + 1
+                if(ratio > 40) Gt40times <- Gt40times + 1
+                if(ratio > 50) Gt50times <- Gt50times + 1
+                if(ratio > 60) Gt60times <- Gt60times + 1
+                if(ratio > 1000) Gt1000times <- Gt1000times + 1
+                if(ratio > 10000) Gt10000times <- Gt10000times + 1
+
+                if(ratio < -10) nGt10times <- nGt10times + 1
+                if(ratio < -20) nGt20times <- nGt20times + 1
+                if(ratio < -30) nGt30times <- nGt30times + 1
+                if(ratio < -40) nGt40times <- nGt40times + 1
+                if(ratio < -50) nGt50times <- nGt50times + 1
+                if(ratio < -60) nGt60times <- nGt60times + 1
+                if(ratio < -1000) nGt1000times <- nGt1000times + 1
+                if(ratio < -10000) nGt10000times <- nGt10000times + 1
+
+                if(ratio < 0) negativeRatio <- negativeRatio + 1
+
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  
+  # tmpa <- abs(ratio)
+  # sum(tmpa > 0.8 & tmpa < 1.1)
+  
+  cat("Gt10times::", Gt10times, Gt10times/(prod(dimen)**2)*100, "\n")
+  cat("Gt20times::", Gt20times, Gt20times/(prod(dimen)**2)*100, "\n")
+  cat("Gt30times::", Gt30times, Gt30times/(prod(dimen)**2)*100, "\n")
+  cat("Gt40times::", Gt40times, Gt40times/(prod(dimen)**2)*100, "\n")
+  cat("Gt50times::", Gt50times, Gt50times/(prod(dimen)**2)*100, "\n")
+  cat("Gt60times::", Gt60times, Gt60times/(prod(dimen)**2)*100, "\n")
+  cat("Gt1000times::", Gt1000times, Gt1000times/(prod(dimen)**2)*100, "\n")
+  cat("Gt10000times::", Gt10000times, Gt10000times/(prod(dimen)**2)*100, "\n")
+  
+  
+  cat("nGt10times::", nGt10times, nGt10times/(prod(dimen)**2)*100, "\n")
+  cat("nGt20times::", nGt20times, nGt20times/(prod(dimen)**2)*100, "\n")
+  cat("nGt30times::", nGt30times, nGt30times/(prod(dimen)**2)*100, "\n")
+  cat("nGt40times::", nGt40times, nGt40times/(prod(dimen)**2)*100, "\n")
+  cat("nGt50times::", nGt50times, nGt50times/(prod(dimen)**2)*100, "\n")
+  cat("nGt60times::", nGt60times, nGt60times/(prod(dimen)**2)*100, "\n")
+  cat("nGt1000times::", nGt1000times, nGt1000times/(prod(dimen)**2)*100, "\n")
+  cat("nGt10000times::", nGt10000times, nGt10000times/(prod(dimen)**2)*100, "\n")
+  
+  cat("Negative Ratio::", negativeRatio, negativeRatio/(prod(dimen)**2)*100, "\n")
+  
+  Gt10times <- 0
+  Gt20times <- 0
+  Gt30times <- 0
+  Gt40times <- 0
+  Gt50times <- 0
+  Gt60times <- 0
+  Gt1000times <- 0
+  Gt10000times <- 0
+  
+  nGt10times <- 0
+  nGt20times <- 0
+  nGt30times <- 0
+  nGt40times <- 0
+  nGt50times <- 0
+  nGt60times <- 0
+  nGt1000times <- 0
+  nGt10000times <- 0
+  negativeRatio <- 0
+  
+  for(i in seq_along(arr_ratio)){
+    ratio <- 1/arr_ratio[[i]]
+    
+    if(ratio > 10) Gt10times <- Gt10times + 1
+    if(ratio > 20) Gt20times <- Gt20times + 1
+    if(ratio > 30) Gt30times <- Gt30times + 1
+    if(ratio > 40) Gt40times <- Gt40times + 1
+    if(ratio > 50) Gt50times <- Gt50times + 1
+    if(ratio > 60) Gt60times <- Gt60times + 1
+    if(ratio > 1000) Gt1000times <- Gt1000times + 1
+    if(ratio > 10000) Gt10000times <- Gt10000times + 1
+    
+    if(ratio < -10) nGt10times <- nGt10times + 1
+    if(ratio < -20) nGt20times <- nGt20times + 1
+    if(ratio < -30) nGt30times <- nGt30times + 1
+    if(ratio < -40) nGt40times <- nGt40times + 1
+    if(ratio < -50) nGt50times <- nGt50times + 1
+    if(ratio < -60) nGt60times <- nGt60times + 1
+    if(ratio < -1000) nGt1000times <- nGt1000times + 1
+    if(ratio < -10000) nGt10000times <- nGt10000times + 1
+    
+    if(ratio < 0) negativeRatio <- negativeRatio + 1
+  }
+  
+  cat("Gt10times::", Gt10times, Gt10times/(prod(dimen)**2)*100, "\n")
+  cat("Gt20times::", Gt20times, Gt20times/(prod(dimen)**2)*100, "\n")
+  cat("Gt30times::", Gt30times, Gt30times/(prod(dimen)**2)*100, "\n")
+  cat("Gt40times::", Gt40times, Gt40times/(prod(dimen)**2)*100, "\n")
+  cat("Gt50times::", Gt50times, Gt50times/(prod(dimen)**2)*100, "\n")
+  cat("Gt60times::", Gt60times, Gt60times/(prod(dimen)**2)*100, "\n")
+  cat("Gt1000times::", Gt1000times, Gt1000times/(prod(dimen)**2)*100, "\n")
+  cat("Gt10000times::", Gt10000times, Gt10000times/(prod(dimen)**2)*100, "\n")
+  
+  
+  cat("nGt10times::", nGt10times, nGt10times/(prod(dimen)**2)*100, "\n")
+  cat("nGt20times::", nGt20times, nGt20times/(prod(dimen)**2)*100, "\n")
+  cat("nGt30times::", nGt30times, nGt30times/(prod(dimen)**2)*100, "\n")
+  cat("nGt40times::", nGt40times, nGt40times/(prod(dimen)**2)*100, "\n")
+  cat("nGt50times::", nGt50times, nGt50times/(prod(dimen)**2)*100, "\n")
+  cat("nGt60times::", nGt60times, nGt60times/(prod(dimen)**2)*100, "\n")
+  cat("nGt1000times::", nGt1000times, nGt1000times/(prod(dimen)**2)*100, "\n")
+  cat("nGt10000times::", nGt10000times, nGt10000times/(prod(dimen)**2)*100, "\n")
+  
+  cat("Negative Ratio::", negativeRatio, negativeRatio/(prod(dimen)**2)*100, "\n")
+  
+  (sum(arr_ratio < 1.2 & arr_ratio > 0.8)/(prod(dimen)**2))*100
+  (sum(arr_ratio < 1.3 & arr_ratio > 0.7)/(prod(dimen)**2))*100
+  (sum(arr_ratio < 1.4 & arr_ratio > 0.6)/(prod(dimen)**2))*100
+  
+  ## If there is no validation set, we can use cv.Separate to tune lambda via cross-validation
+  # fit <- cv.Separate(x, lambda.list=lambda.list)
+  ## With a user-specified sequence of lambdas in lambda.vec, we can directly fit the model
+  # fit <- Separate.fit(x, lambda.vec = lambda.vec)
+  
+  # Simulation summary of estimation errors, TPR and TNR
+  out <- simulation.summary(Omegahat, Omega, offdiag = FALSE)
+  av.error.f[run] <- out$av.error.f
+  av.error.max[run] <- out$av.error.max
+  av.tpr[run] <- out$av.tpr
+  av.tnr[run] <- out$av.tnr
+  
+  error.f[run, ] <- out$error.f
+  error.max[run, ] <- out$error.max
+  tpr[run, ] <- out$tpr
+  tnr[run, ] <- out$tnr
+  
+}
+
+
+# 1. Plot the first vector
+plot(c(Sigma[[1]]), c(est_SigmaTx[[1]]), 
+     type = "l", 
+     col = "blue", 
+     lwd = 2,
+     xlab = "Index / Sigma", 
+     ylab = "Values", 
+     xlim = c(0, 1),
+     ylim = c(0, 1),
+     main = "Comparison of Estimated Vectors")
+
+# 2. Add the second vector as a line
+lines(c(Sigma[[1]]), c(est_Sigmax[[1]]), 
+      col = "red", 
+      lwd = 2)
+
+lines(c(Sigma[[1]]), c(Sigma[[1]]), 
+      col = "black", 
+      lwd = 2)
+
+# 3. Add a legend to distinguish the lines
+legend("bottomright", 
+       legend = c("est_SigmaTx", "est_Sigmax"), 
+       col = c("blue", "red",), 
+       lty = 1, 
+       lwd = 2)
+
+# estimation error
+mean(av.error.f)
+colMeans(error.f)
+mean(av.error.max)
+colMeans(error.max)
+
+# TPR and TNR
+mean(av.tpr)
+colMeans(tpr)
+mean(av.tnr)
+colMeans(tnr)
