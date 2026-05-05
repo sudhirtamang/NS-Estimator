@@ -290,8 +290,8 @@ for (run in 1:Run) {
   Tvax <- NSEstimator(vax, dimen)
   
   # proper candidates of tuning parameters
-  lamseq <- seq(1.5e-04, 0.2, length.out = 100)
-  # lamseq <- seq(1.5e-09, 2e-05, length.out = 50)
+  # lamseq <- seq(1.5e-09, 0.2, length.out = 100)
+  lamseq <- seq(1.5e-06, 0.1, length.out = 200)
   lambda.list <- list() # a list containing candidates of tuning parameters for each mode 
   for (i in 1:K) {
     lambda.list[[i]] <- lamseq

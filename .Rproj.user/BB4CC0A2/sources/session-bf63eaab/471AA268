@@ -3,7 +3,7 @@
     "path": "C:/Users/sudhi/Desktop/PhD projects/NS-Estimator/file1.R",
     "project_path": "file1.R",
     "type": "r_source",
-    "hash": "1081276411",
+    "hash": "1829851132",
     "contents": "",
     "dirty": false,
     "created": 1777404160362.0,
@@ -13,15 +13,15 @@
         "tempName": "Untitled1",
         "source_window_id": "",
         "Source": "Source",
-        "cursorPosition": "6,26",
-        "scrollLine": "0"
+        "cursorPosition": "365,15",
+        "scrollLine": "334"
     },
     "folds": "",
-    "lastKnownWriteTime": 1777923926,
+    "lastKnownWriteTime": 1778001455,
     "encoding": "UTF-8",
     "collab_server": "",
     "source_window": "",
-    "last_content_update": 1777923926556,
+    "last_content_update": 1778001455029,
     "read_only": false,
     "read_only_alternatives": []
 }
