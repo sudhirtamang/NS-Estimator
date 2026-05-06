@@ -250,6 +250,7 @@ dimen <- c(30, 36, 30) # dimension of tensor
 nvars <- prod(dimen) # number of variables
 K <- 3 # order of tensor
 Run <- 100
+# Run <- 2
 
 
 d <- 1
@@ -264,17 +265,17 @@ error.max <- array(0, dim = c(Run, d)) # estimation error in Maximum norm for ea
 tpr <- array(0, dim = c(Run, d)) # true positive rate for each mode
 tnr <- array(0, dim = c(Run, d)) # true negative rate for each mode
 
-d <- 1
-av.error.f.T <- array(0, dim = c(Run, d)) # averaged estimation error in Frobenius norm
-av.error.max.T <- array(0, dim = c(Run, d)) # averaged estimation error in Maximum norm
-av.tpr.T <- array(0, dim = c(Run, d)) # averaged true positive rate
-av.tnr.T <- array(0, dim = c(Run, d)) # averaged true negative rate
-
-d <- 3
-error.f.T <- array(0, dim = c(Run, d)) # estimation error in Frobenius norm for each mode
-error.max.T <- array(0, dim = c(Run, d)) # estimation error in Maximum norm for each mode
-tpr.T <- array(0, dim = c(Run, d)) # true positive rate for each mode
-tnr.T <- array(0, dim = c(Run, d)) # true negative rate for each mode
+# d <- 1
+# av.error.f.T <- array(0, dim = c(Run, d)) # averaged estimation error in Frobenius norm
+# av.error.max.T <- array(0, dim = c(Run, d)) # averaged estimation error in Maximum norm
+# av.tpr.T <- array(0, dim = c(Run, d)) # averaged true positive rate
+# av.tnr.T <- array(0, dim = c(Run, d)) # averaged true negative rate
+# 
+# d <- 3
+# error.f.T <- array(0, dim = c(Run, d)) # estimation error in Frobenius norm for each mode
+# error.max.T <- array(0, dim = c(Run, d)) # estimation error in Maximum norm for each mode
+# tpr.T <- array(0, dim = c(Run, d)) # true positive rate for each mode
+# tnr.T <- array(0, dim = c(Run, d)) # true negative rate for each mode
 
 
 for (run in 1:Run) { 
@@ -291,7 +292,7 @@ for (run in 1:Run) {
   
   # proper candidates of tuning parameters
   # lamseq <- seq(1.5e-09, 0.2, length.out = 100)
-  lamseq <- seq(1.5e-06, 0.1, length.out = 200)
+  lamseq <- seq(1e-04, 1e-1, length.out = 200)
   lambda.list <- list() # a list containing candidates of tuning parameters for each mode 
   for (i in 1:K) {
     lambda.list[[i]] <- lamseq
@@ -314,7 +315,7 @@ for (run in 1:Run) {
   
   # Simulation summary of estimation errors, TPR and TNR
   # out <- simulation.summary(purrr::map(fit$fit_result, \(x) x[[2]]), Sigma, offdiag = FALSE)
-  out <- simulation.summary(purrr::map(fit$fit_result, \(x) x[[1]]), Omega, offdiag = FALSE)
+  out <- simulation.summary(purrr::map(fit$fit_result, \(x) x[[2]]), purrr::map(fit.T$fit_result, \(x) x[[2]]), offdiag = FALSE)
   av.error.f[run] <- out$av.error.f
   av.error.max[run] <- out$av.error.max
   av.tpr[run] <- out$av.tpr
@@ -325,22 +326,22 @@ for (run in 1:Run) {
   tpr[run, ] <- out$tpr
   tnr[run, ] <- out$tnr
   
-  # out <- simulation.summary(purrr::map(fit.T$fit_result, \(x) x[[2]]), Sigma, offdiag = FALSE)
-  out <- simulation.summary(purrr::map(fit.T$fit_result, \(x) x[[1]]), Omega, offdiag = FALSE)
-  av.error.f.T[run] <- out$av.error.f
-  av.error.max.T[run] <- out$av.error.max
-  av.tpr.T[run] <- out$av.tpr
-  av.tnr.T[run] <- out$av.tnr
-  
-  error.f.T[run, ] <- out$error.f
-  error.max.T[run, ] <- out$error.max
-  tpr.T[run, ] <- out$tpr
-  tnr.T[run, ] <- out$tnr
+  # out2 <- simulation.summary(purrr::map(fit.T$fit_result, \(x) x[[2]]), Sigma, offdiag = FALSE)
+  # out <- simulation.summary(purrr::map(fit.T$fit_result, \(x) x[[1]]), Omega, offdiag = FALSE)
+  # av.error.f.T[run] <- out$av.error.f
+  # av.error.max.T[run] <- out$av.error.max
+  # av.tpr.T[run] <- out$av.tpr
+  # av.tnr.T[run] <- out$av.tnr
+  # 
+  # error.f.T[run, ] <- out$error.f
+  # error.max.T[run, ] <- out$error.max
+  # tpr.T[run, ] <- out$tpr
+  # tnr.T[run, ] <- out$tnr
   
 }
 
 
-cat("\n\n\n\n\n\nCLEAN DATA and purely FAST and SEPARABLE ESTIMATION: Omega\n\n")
+
 # estimation error
 mean(av.error.f)
 colMeans(error.f)
@@ -352,18 +353,19 @@ mean(av.tpr)
 colMeans(tpr)
 mean(av.tnr)
 colMeans(tnr)
-cat("\n\n\n\n\nCLEAN DATA with TRANSFORMATION and FAST and SEPARABLE ESTIMATION: Omega\n\n")
-# estimation error
-mean(av.error.f.T)
-colMeans(error.f.T)
-mean(av.error.max.T)
-colMeans(error.max.T)
 
-# TPR and TNR
-mean(av.tpr.T)
-colMeans(tpr.T)
-mean(av.tnr.T)
-colMeans(tnr.T)
+
+# estimation error
+# mean(av.error.f.T)
+# colMeans(error.f.T)
+# mean(av.error.max.T)
+# colMeans(error.max.T)
+# 
+# # TPR and TNR
+# mean(av.tpr.T)
+# colMeans(tpr.T)
+# mean(av.tnr.T)
+# colMeans(tnr.T)
 
 
 ########################$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
