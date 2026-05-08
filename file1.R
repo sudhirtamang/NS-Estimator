@@ -37,8 +37,8 @@ Model7 <- function(n, seed) {
   
   Omega <- purrr::map2(dimen, 1:3, \(x, y) ChainOmega(x, sd = y*100, norm.type = 2))
   Sigma <- purrr::map(Omega, \(x) solve(x))
-  Sigma <- purrr::map(Sigma, \(x) x/x[1, 1]) # covariance matrix
   Omega <- purrr::map2(Omega, Sigma, \(x, y) x*y[1, 1]) # precision matrix
+  Sigma <- purrr::map(Sigma, \(x) x/x[1, 1]) # covariance matrix
   dSigma <- purrr::map(Sigma, \(x) t(chol(x))) # square root of covariance matrix
 
   
@@ -250,7 +250,7 @@ dimen <- c(30, 36, 30) # dimension of tensor
 nvars <- prod(dimen) # number of variables
 K <- 3 # order of tensor
 Run <- 100
-# Run <- 2
+Run <- 2
 
 
 d <- 1
@@ -265,17 +265,17 @@ error.max <- array(0, dim = c(Run, d)) # estimation error in Maximum norm for ea
 tpr <- array(0, dim = c(Run, d)) # true positive rate for each mode
 tnr <- array(0, dim = c(Run, d)) # true negative rate for each mode
 
-# d <- 1
-# av.error.f.T <- array(0, dim = c(Run, d)) # averaged estimation error in Frobenius norm
-# av.error.max.T <- array(0, dim = c(Run, d)) # averaged estimation error in Maximum norm
-# av.tpr.T <- array(0, dim = c(Run, d)) # averaged true positive rate
-# av.tnr.T <- array(0, dim = c(Run, d)) # averaged true negative rate
-# 
-# d <- 3
-# error.f.T <- array(0, dim = c(Run, d)) # estimation error in Frobenius norm for each mode
-# error.max.T <- array(0, dim = c(Run, d)) # estimation error in Maximum norm for each mode
-# tpr.T <- array(0, dim = c(Run, d)) # true positive rate for each mode
-# tnr.T <- array(0, dim = c(Run, d)) # true negative rate for each mode
+d <- 1
+av.error.f.T <- array(0, dim = c(Run, d)) # averaged estimation error in Frobenius norm
+av.error.max.T <- array(0, dim = c(Run, d)) # averaged estimation error in Maximum norm
+av.tpr.T <- array(0, dim = c(Run, d)) # averaged true positive rate
+av.tnr.T <- array(0, dim = c(Run, d)) # averaged true negative rate
+
+d <- 3
+error.f.T <- array(0, dim = c(Run, d)) # estimation error in Frobenius norm for each mode
+error.max.T <- array(0, dim = c(Run, d)) # estimation error in Maximum norm for each mode
+tpr.T <- array(0, dim = c(Run, d)) # true positive rate for each mode
+tnr.T <- array(0, dim = c(Run, d)) # true negative rate for each mode
 
 
 for (run in 1:Run) { 
@@ -292,7 +292,7 @@ for (run in 1:Run) {
   
   # proper candidates of tuning parameters
   # lamseq <- seq(1.5e-09, 0.2, length.out = 100)
-  lamseq <- seq(1e-04, 1e-1, length.out = 200)
+  lamseq <- seq(1e-09, 1e-04, length.out = 2000)
   lambda.list <- list() # a list containing candidates of tuning parameters for each mode 
   for (i in 1:K) {
     lambda.list[[i]] <- lamseq
@@ -306,6 +306,7 @@ for (run in 1:Run) {
   # for (i in 1:K) {
   #   lambda.list[[i]] <- lamseq
   # }
+  # fit.T <- Separate.fit(Tx, lambda.vec = fit$lambda)
   fit.T <- Separate.fit(Tx, Tvax, lambda.list = lambda.list)
   
   ## If there is no validation set, we can use cv.Separate to tune lambda via cross-validation
@@ -314,8 +315,9 @@ for (run in 1:Run) {
   # fit <- Separate.fit(x, lambda.vec = lambda.vec)
   
   # Simulation summary of estimation errors, TPR and TNR
-  # out <- simulation.summary(purrr::map(fit$fit_result, \(x) x[[2]]), Sigma, offdiag = FALSE)
-  out <- simulation.summary(purrr::map(fit$fit_result, \(x) x[[2]]), purrr::map(fit.T$fit_result, \(x) x[[2]]), offdiag = FALSE)
+  out <- simulation.summary(purrr::map(fit$fit_result, \(x) x[[1]]), Omega, offdiag = FALSE)
+  # out <- simulation.summary(purrr::map(fit$fit_result, \(x) x[[1]]), purrr::map(fit.T$fit_result, \(x) x[[1]]), offdiag = FALSE)
+  # out <- simulation.summary(purrr::map(fit$fit_result, \(x) x[[2]]), purrr::map(fit.T$fit_result, \(x) x[[2]]), offdiag = FALSE)
   av.error.f[run] <- out$av.error.f
   av.error.max[run] <- out$av.error.max
   av.tpr[run] <- out$av.tpr
@@ -327,16 +329,16 @@ for (run in 1:Run) {
   tnr[run, ] <- out$tnr
   
   # out2 <- simulation.summary(purrr::map(fit.T$fit_result, \(x) x[[2]]), Sigma, offdiag = FALSE)
-  # out <- simulation.summary(purrr::map(fit.T$fit_result, \(x) x[[1]]), Omega, offdiag = FALSE)
-  # av.error.f.T[run] <- out$av.error.f
-  # av.error.max.T[run] <- out$av.error.max
-  # av.tpr.T[run] <- out$av.tpr
-  # av.tnr.T[run] <- out$av.tnr
-  # 
-  # error.f.T[run, ] <- out$error.f
-  # error.max.T[run, ] <- out$error.max
-  # tpr.T[run, ] <- out$tpr
-  # tnr.T[run, ] <- out$tnr
+  out <- simulation.summary(purrr::map(fit.T$fit_result, \(x) x[[1]]), Omega, offdiag = FALSE)
+  av.error.f.T[run] <- out$av.error.f
+  av.error.max.T[run] <- out$av.error.max
+  av.tpr.T[run] <- out$av.tpr
+  av.tnr.T[run] <- out$av.tnr
+
+  error.f.T[run, ] <- out$error.f
+  error.max.T[run, ] <- out$error.max
+  tpr.T[run, ] <- out$tpr
+  tnr.T[run, ] <- out$tnr
   
 }
 
@@ -356,16 +358,56 @@ colMeans(tnr)
 
 
 # estimation error
-# mean(av.error.f.T)
-# colMeans(error.f.T)
-# mean(av.error.max.T)
-# colMeans(error.max.T)
-# 
-# # TPR and TNR
-# mean(av.tpr.T)
-# colMeans(tpr.T)
-# mean(av.tnr.T)
-# colMeans(tnr.T)
+mean(av.error.f.T)
+colMeans(error.f.T)
+mean(av.error.max.T)
+colMeans(error.max.T)
 
+# TPR and TNR
+mean(av.tpr.T)
+colMeans(tpr.T)
+mean(av.tnr.T)
+colMeans(tnr.T)
 
 ########################$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+Sigma_fit <- purrr::map(fit$fit_result, \(x) x[[2]])
+Sigma_fit.T <- purrr::map(fit.T$fit_result, \(x) x[[2]])
+simulation.summary(Sigma_fit.T, Sigma_fit, offdiag = FALSE)
+simulation.summary(purrr::map(fit$fit_result, \(x) x[[1]]), purrr::map(fit.T$fit_result, \(x) x[[1]]), offdiag = FALSE)
+simulation.summary(purrr::map(fit$fit_result, \(x) x[[1]]), Omega, offdiag = FALSE)
+simulation.summary(purrr::map(fit.T$fit_result, \(x) x[[1]]), Omega, offdiag = FALSE)
+
+
+
+
+# 1. Plot the first vector
+plot(c(Sigma[[1]]), c(Sigma_fit[[1]]), 
+     type = "l", 
+     col = "blue", 
+     lwd = 2,
+     xlab = "Index / Sigma", 
+     ylab = "Values", 
+     asp=1,
+     # xlim = c(0, 1),
+     # ylim = c(0, 1),
+     main = "Comparison of Estimated Vectors")
+abline(a = 0, b = 1, col = "red", lwd = 2)
+
+# 2. Add the second vector as a line
+lines(c(Sigma_fit[[1]]), c(est_Sigmax[[1]]), 
+      col = "red", 
+      lwd = 2)
+
+lines(c(Sigma_fit[[1]]), c(Sigma[[1]]), 
+      col = "black", 
+      lwd = 2)
+
+# 3. Add a legend to distinguish the lines
+legend("bottomright", 
+       legend = c("est_SigmaTx", "est_Sigmax"), 
+       col = c("blue", "red",), 
+       lty = 1, 
+       lwd = 2)
+
+
