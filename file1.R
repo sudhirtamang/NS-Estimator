@@ -37,6 +37,7 @@ Model7 <- function(n, seed) {
   
   Omega <- purrr::map2(dimen, 1:3, \(x, y) ChainOmega(x, sd = y*100, norm.type = 2))
   Sigma <- purrr::map(Omega, \(x) solve(x))
+  scales <- purrr::map_dbl(Sigma, \(x) x[1, 1])
   Omega <- purrr::map2(Omega, Sigma, \(x, y) x*y[1, 1]) # precision matrix
   Sigma <- purrr::map(Sigma, \(x) x/x[1, 1]) # covariance matrix
   dSigma <- purrr::map(Sigma, \(x) t(chol(x))) # square root of covariance matrix
@@ -65,7 +66,7 @@ Model7 <- function(n, seed) {
   result$x <- x
   result$vax <- vax
   
-  return(list(result, Sigma, Omega))
+  return(list(result, Sigma, Omega, scales))
   
 }
 
@@ -228,9 +229,9 @@ Separate.fit = function(x, val = NULL, est.mode = NULL, lambda.vec = NULL, lambd
     # fit model
     Out1 = glasso(S.mat, rho = lam.best[mode_ind], penalize.diagonal = FALSE, maxit = maxit, thr = thres)
     hat_Omega = as.matrix(Out1$wi)
-    # normalization
+    normalization
     if (normalize) {
-      hat_Omega = hat_Omega / norm(hat_Omega, type = "F")
+      hat_Omega = (hat_Omega / norm(hat_Omega, type = "F"))
     }
     list(hat_Omega, S.mat)
   }
@@ -286,6 +287,7 @@ for (run in 1:Run) {
   vax <- data[[1]]$vax
   Sigma <- data[[2]]
   Omega <- data[[3]]
+  scales <- data[[4]]
   
   Tx <- NSEstimator(x, dimen)
   Tvax <- NSEstimator(vax, dimen)
@@ -315,7 +317,7 @@ for (run in 1:Run) {
   # fit <- Separate.fit(x, lambda.vec = lambda.vec)
   
   # Simulation summary of estimation errors, TPR and TNR
-  out <- simulation.summary(purrr::map(fit$fit_result, \(x) x[[1]]), Omega, offdiag = FALSE)
+  out <- simulation.summary(purrr::map2(fit$fit_result, scales, \(x, y) x[[1]]*y), Omega, offdiag = FALSE)
   # out <- simulation.summary(purrr::map(fit$fit_result, \(x) x[[1]]), purrr::map(fit.T$fit_result, \(x) x[[1]]), offdiag = FALSE)
   # out <- simulation.summary(purrr::map(fit$fit_result, \(x) x[[2]]), purrr::map(fit.T$fit_result, \(x) x[[2]]), offdiag = FALSE)
   av.error.f[run] <- out$av.error.f
@@ -329,7 +331,7 @@ for (run in 1:Run) {
   tnr[run, ] <- out$tnr
   
   # out2 <- simulation.summary(purrr::map(fit.T$fit_result, \(x) x[[2]]), Sigma, offdiag = FALSE)
-  out <- simulation.summary(purrr::map(fit.T$fit_result, \(x) x[[1]]), Omega, offdiag = FALSE)
+  out <- simulation.summary(purrr::map2(fit.T$fit_result, scales, \(x, y) x[[1]]*y), Omega, offdiag = FALSE)
   av.error.f.T[run] <- out$av.error.f
   av.error.max.T[run] <- out$av.error.max
   av.tpr.T[run] <- out$av.tpr
