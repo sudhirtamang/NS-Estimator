@@ -30,7 +30,7 @@ Model7 <- function(n, seed) {
   # n: sample size
   
   # Model setting
-  dimen <- c(30, 36, 30) # dimension of X
+  dimen <- c(95, 2, 3) # dimension of X
   nvars <- prod(dimen) # number of variables
   K <- 3 # order of X
   
@@ -229,9 +229,9 @@ Separate.fit = function(x, val = NULL, est.mode = NULL, lambda.vec = NULL, lambd
     # fit model
     Out1 = glasso(S.mat, rho = lam.best[mode_ind], penalize.diagonal = FALSE, maxit = maxit, thr = thres)
     hat_Omega = as.matrix(Out1$wi)
-    normalization
+    # normalization
     if (normalize) {
-      hat_Omega = (hat_Omega / norm(hat_Omega, type = "F"))
+      hat_Omega = hat_Omega / norm(hat_Omega, type = "F")
     }
     list(hat_Omega, S.mat)
   }
@@ -247,7 +247,7 @@ Separate.fit = function(x, val = NULL, est.mode = NULL, lambda.vec = NULL, lambd
 
 # Model setting
 n <- 20 # sample size
-dimen <- c(30, 36, 30) # dimension of tensor
+dimen <- c(95, 2, 3) # dimension of tensor
 nvars <- prod(dimen) # number of variables
 K <- 3 # order of tensor
 Run <- 100
@@ -279,75 +279,86 @@ tpr.T <- array(0, dim = c(Run, d)) # true positive rate for each mode
 tnr.T <- array(0, dim = c(Run, d)) # true negative rate for each mode
 
 
-for (run in 1:Run) { 
-  print(run)
-  # Generate training set and validation set
-  data <- Model7(n, run * 123456)
-  x <- data[[1]]$x
-  vax <- data[[1]]$vax
-  Sigma <- data[[2]]
-  Omega <- data[[3]]
-  scales <- data[[4]]
-  
-  Tx <- NSEstimator(x, dimen)
-  Tvax <- NSEstimator(vax, dimen)
-  
-  # proper candidates of tuning parameters
-  # lamseq <- seq(1.5e-09, 0.2, length.out = 100)
-  lamseq <- seq(1e-09, 1e-04, length.out = 2000)
-  lambda.list <- list() # a list containing candidates of tuning parameters for each mode 
-  for (i in 1:K) {
-    lambda.list[[i]] <- lamseq
+Run <- 3
+sample_sizes <- c(20, 20, 100, 1000)
+AV.ERROR.F <- vector(mode="double", length=length(sample_sizes))
+AV.ERROR.F.T <- vector(mode="double", length=length(sample_sizes))
+for(k in seq_along(sample_sizes)){
+  d <- 1
+  av.error.f <- array(0, dim = c(Run, d)) # averaged estimation error in Frobenius norm
+  av.error.f.T <- array(0, dim = c(Run, d)) # averaged estimation error in Frobenius norm
+  for (run in 1:Run) { 
+    print(run)
+    # Generate training set and validation set
+    data <- Model7(sample_sizes[[k]], run * 123456)
+    x <- data[[1]]$x
+    vax <- data[[1]]$vax
+    Sigma <- data[[2]]
+    Omega <- data[[3]]
+    scales <- data[[4]]
+    
+    Tx <- NSEstimator(x, dimen)
+    Tvax <- NSEstimator(vax, dimen)
+    
+    # proper candidates of tuning parameters
+    # lamseq <- seq(1.5e-09, 0.2, length.out = 100)
+    lamseq <- seq(1e-09, 1e-04, length.out = 2000)
+    lambda.list <- list() # a list containing candidates of tuning parameters for each mode 
+    for (i in 1:K) {
+      lambda.list[[i]] <- lamseq
+    }
+    
+    # Model fitting
+    fit <- Separate.fit(x, vax, lambda.list = lambda.list)
+    # lamseq <- seq(1.5e-03, 0.2, length.out = 100)
+    # # lamseq <- seq(1.5e-09, 2e-05, length.out = 50)
+    # lambda.list <- list() # a list containing candidates of tuning parameters for each mode 
+    # for (i in 1:K) {
+    #   lambda.list[[i]] <- lamseq
+    # }
+    # fit.T <- Separate.fit(Tx, lambda.vec = fit$lambda)
+    fit.T <- Separate.fit(Tx, Tvax, lambda.list = lambda.list)
+    
+    ## If there is no validation set, we can use cv.Separate to tune lambda via cross-validation
+    # fit <- cv.Separate(x, lambda.list=lambda.list)
+    ## With a user-specified sequence of lambdas in lambda.vec, we can directly fit the model
+    # fit <- Separate.fit(x, lambda.vec = lambda.vec)
+    
+    # Simulation summary of estimation errors, TPR and TNR
+    out <- simulation.summary(purrr::map2(fit$fit_result, scales, \(x, y) x[[1]]*y), Omega, offdiag = FALSE)
+    # out <- simulation.summary(purrr::map(fit$fit_result, \(x) x[[1]]), purrr::map(fit.T$fit_result, \(x) x[[1]]), offdiag = FALSE)
+    # out <- simulation.summary(purrr::map(fit$fit_result, \(x) x[[2]]), purrr::map(fit.T$fit_result, \(x) x[[2]]), offdiag = FALSE)
+    av.error.f[run] <- out$av.error.f
+    # av.error.max[run] <- out$av.error.max
+    # av.tpr[run] <- out$av.tpr
+    # av.tnr[run] <- out$av.tnr
+    # 
+    # error.f[run, ] <- out$error.f
+    # error.max[run, ] <- out$error.max
+    # tpr[run, ] <- out$tpr
+    # tnr[run, ] <- out$tnr
+    
+    # out2 <- simulation.summary(purrr::map(fit.T$fit_result, \(x) x[[2]]), Sigma, offdiag = FALSE)
+    out <- simulation.summary(purrr::map2(fit.T$fit_result, scales, \(x, y) x[[1]]*y), Omega, offdiag = FALSE)
+    av.error.f.T[run] <- out$av.error.f.T
+    # av.error.max.T[run] <- out$av.error.max
+    # av.tpr.T[run] <- out$av.tpr
+    # av.tnr.T[run] <- out$av.tnr
+    # 
+    # error.f.T[run, ] <- out$error.f
+    # error.max.T[run, ] <- out$error.max
+    # tpr.T[run, ] <- out$tpr
+    # tnr.T[run, ] <- out$tnr
+    
   }
-  
-  # Model fitting
-  fit <- Separate.fit(x, vax, lambda.list = lambda.list)
-  # lamseq <- seq(1.5e-03, 0.2, length.out = 100)
-  # # lamseq <- seq(1.5e-09, 2e-05, length.out = 50)
-  # lambda.list <- list() # a list containing candidates of tuning parameters for each mode 
-  # for (i in 1:K) {
-  #   lambda.list[[i]] <- lamseq
-  # }
-  # fit.T <- Separate.fit(Tx, lambda.vec = fit$lambda)
-  fit.T <- Separate.fit(Tx, Tvax, lambda.list = lambda.list)
-  
-  ## If there is no validation set, we can use cv.Separate to tune lambda via cross-validation
-  # fit <- cv.Separate(x, lambda.list=lambda.list)
-  ## With a user-specified sequence of lambdas in lambda.vec, we can directly fit the model
-  # fit <- Separate.fit(x, lambda.vec = lambda.vec)
-  
-  # Simulation summary of estimation errors, TPR and TNR
-  out <- simulation.summary(purrr::map2(fit$fit_result, scales, \(x, y) x[[1]]*y), Omega, offdiag = FALSE)
-  # out <- simulation.summary(purrr::map(fit$fit_result, \(x) x[[1]]), purrr::map(fit.T$fit_result, \(x) x[[1]]), offdiag = FALSE)
-  # out <- simulation.summary(purrr::map(fit$fit_result, \(x) x[[2]]), purrr::map(fit.T$fit_result, \(x) x[[2]]), offdiag = FALSE)
-  av.error.f[run] <- out$av.error.f
-  av.error.max[run] <- out$av.error.max
-  av.tpr[run] <- out$av.tpr
-  av.tnr[run] <- out$av.tnr
-  
-  error.f[run, ] <- out$error.f
-  error.max[run, ] <- out$error.max
-  tpr[run, ] <- out$tpr
-  tnr[run, ] <- out$tnr
-  
-  # out2 <- simulation.summary(purrr::map(fit.T$fit_result, \(x) x[[2]]), Sigma, offdiag = FALSE)
-  out <- simulation.summary(purrr::map2(fit.T$fit_result, scales, \(x, y) x[[1]]*y), Omega, offdiag = FALSE)
-  av.error.f.T[run] <- out$av.error.f
-  av.error.max.T[run] <- out$av.error.max
-  av.tpr.T[run] <- out$av.tpr
-  av.tnr.T[run] <- out$av.tnr
-
-  error.f.T[run, ] <- out$error.f
-  error.max.T[run, ] <- out$error.max
-  tpr.T[run, ] <- out$tpr
-  tnr.T[run, ] <- out$tnr
-  
+  AV.ERROR.F[[k]] <- mean(av.error.f)
+  AV.ERROR.F.T[[k]] <- mean(av.error.f.T)
 }
-
+plot(AV.ERROR.F[[k]], col="green")
+points(AV.ERROR.F.T[[k]], col="red")
 
 
 # estimation error
-mean(av.error.f)
 colMeans(error.f)
 mean(av.error.max)
 colMeans(error.max)
@@ -384,7 +395,7 @@ simulation.summary(purrr::map(fit.T$fit_result, \(x) x[[1]]), Omega, offdiag = F
 
 
 # 1. Plot the first vector
-plot(c(Sigma[[1]]), c(Sigma_fit[[1]]), 
+plot(c(Sigma_fit[[1]]), c(Sigma_fit.T[[1]]), 
      type = "l", 
      col = "blue", 
      lwd = 2,
@@ -412,4 +423,15 @@ legend("bottomright",
        lty = 1, 
        lwd = 2)
 
+for(i in 1:3){
+  plot(c(Sigma_fit[[i]]), c(Sigma_fit.T[[i]]), col="black", pch=19, xlab="Clean Estimated covarianes",
+       ylab="NS-Estimated covariances", s=4, main = bquote("Estimate of" ~ Sigma[.(i)]))
+  points(diag(Sigma_fit[[i]]), diag(Sigma_fit.T[[i]]), col="red", pch=19, s=4)
+  abline(a = 0, b = 1, col = "green", lwd = 2, lty = 2)
+  legend("topleft", 
+         legend = c("Off-Diagonal", "Diagonal"), 
+         col = c("black", "red"), 
+         pch = c(19, 19))
+}
 
+     
