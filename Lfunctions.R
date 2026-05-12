@@ -97,6 +97,51 @@ NSEstimator <- function(x, dimen){
   return(tmp)
 }
 
+
+NSEstimator2 <- function(x, dimen){
+  tmp <- array(NA, dim(x))
+  for(j in 1:dimen[[1]]){
+    for(k in 1:dimen[[2]]){
+        tmpCDF <- stats::ecdf(x[j, k, ])
+        tmp[j, k, ] <- qnorm((n/(n+1)) * tmpCDF(x[j, k, ]))
+    }
+  }
+  return(tmp)
+}
+
+
+tildeOmega <- function(x, dimen, n){
+  # x is an array.
+  # if dim(x) = c(30, 34, 35, 200) then the first tensor observation is x[, , , 1].
+  # dimen is the dimension of the tensor observation
+  # n is the sample size, or the length of the last dimension of x.
+  K <- length(dimen)
+  nvars <- prod(dimen)
+  fit1 = foreach(k = 1:K, .export = c("x"), .combine = list, .multicombine = TRUE) %dopar% {
+    # when sample size is small, use the identity matrix
+    if (n * nvars < ((dimen[k]**2) * (dimen[k] - 1) / 2)) {
+      Omega_tilde = diag(dimen[k])
+    }
+    else {
+      # when sample size is large, calculate the sample estimator of the precision matrices
+      S.array = array(dim=c(dimen[k], dimen[k], n))
+      for (i in 1:n) {
+        # d = 0
+        # eval(parse(text = paste("d=x[", paste(rep(",", K), collapse = ""), "i]"))) # assign the ith observation to d
+        d <- do.call("[", c(list(x), rep(list(substitute()), K), i))
+        Vi = rTensor::k_unfold(rTensor::as.tensor(d), m = k)@data  # unfold tensor
+        S.array[, , i] = Vi %*% t(Vi)
+      }
+      S.mat = apply(S.array, c(1, 2), mean) * dimen[k] / nvars 
+      Omega_tilde = solve(S.mat)
+      if (normalize) {
+        Omega_tilde = Omega_tilde / norm(Omega_tilde, type = "F")}
+    }
+    Omega_tilde
+  }
+}
+
+
 # 
 # fold_indices <- caret::createFolds(1:n, k = 5, list = TRUE)
 # fold_SIGMA_train <- vector("list", 5)
@@ -132,4 +177,22 @@ NSEstimator <- function(x, dimen){
 # }
 
 
+
+
+# Setup: A 3D array (could be any dimension)
+my_array <- array(1:24, dim = c(2, 3, 4))
+
+# Goal: Subset the 2nd index of the 2nd dimension
+target_dim <- 2
+target_index <- 2
+
+# 1. Create a list of 'empty' arguments for every dimension
+args <- rep(list(substitute()), length(dim(my_array)))
+
+# 2. Fill in the specific dimension you want to subset
+args[[target_dim]] <- target_index
+
+# 3. Use do.call to call the "[" function
+# Equivalent to: my_array[, 2, ]
+result <- do.call("[", c(list(my_array), args))
 
