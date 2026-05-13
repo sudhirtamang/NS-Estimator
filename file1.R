@@ -9,7 +9,6 @@
 
 rm(list = ls())
 
-# CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 library(Tlasso)
 library(tensr)
 library(glasso)
