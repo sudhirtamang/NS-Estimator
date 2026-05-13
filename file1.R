@@ -30,15 +30,16 @@ Model7 <- function(n, seed) {
   # n: sample size
   
   # Model setting
-  dimen <- c(95, 2, 3) # dimension of X
+  dimen <- c(30, 36, 30) # dimension of X
+  # dimen <- c(95, 2, 3) # dimension of X
   nvars <- prod(dimen) # number of variables
   K <- 3 # order of X
   
   
   Omega <- purrr::map2(dimen, 1:3, \(x, y) ChainOmega(x, sd = y*100, norm.type = 2))
   Sigma <- purrr::map(Omega, \(x) solve(x))
-  scales <- purrr::map_dbl(Sigma, \(x) x[1, 1])
-  Omega <- purrr::map2(Omega, Sigma, \(x, y) x*y[1, 1]) # precision matrix
+  # scales <- purrr::map_dbl(Sigma, \(x) x[1, 1])
+  # Omega <- purrr::map2(Omega, Sigma, \(x, y) x*y[1, 1]) # precision matrix
   Sigma <- purrr::map(Sigma, \(x) x/x[1, 1]) # covariance matrix
   dSigma <- purrr::map(Sigma, \(x) t(chol(x))) # square root of covariance matrix
 
@@ -66,7 +67,7 @@ Model7 <- function(n, seed) {
   result$x <- x
   result$vax <- vax
   
-  return(list(result, Sigma, Omega, scales))
+  return(list(result, Sigma, Omega))
   
 }
 
@@ -247,7 +248,8 @@ Separate.fit = function(x, val = NULL, est.mode = NULL, lambda.vec = NULL, lambd
 
 # Model setting
 n <- 20 # sample size
-dimen <- c(95, 2, 3) # dimension of tensor
+dimen <- c(30, 36, 30) # dimension of tensor
+# dimen <- c(95, 2, 3) # dimension of tensor
 nvars <- prod(dimen) # number of variables
 K <- 3 # order of tensor
 Run <- 100
@@ -279,8 +281,10 @@ tpr.T <- array(0, dim = c(Run, d)) # true positive rate for each mode
 tnr.T <- array(0, dim = c(Run, d)) # true negative rate for each mode
 
 
-Run <- 3
-sample_sizes <- c(20, 20, 100, 1000)
+Run <- 5
+# sample_sizes <- c(20, 20)
+# sample_sizes <- c(20, 40, 100, 250, 700, 10000)
+sample_sizes <- c(20, 40, 100, 250, 550, 900, 2000, 3500, 6500, 10000)
 AV.ERROR.F <- vector(mode="double", length=length(sample_sizes))
 AV.ERROR.F.T <- vector(mode="double", length=length(sample_sizes))
 for(k in seq_along(sample_sizes)){
@@ -295,14 +299,14 @@ for(k in seq_along(sample_sizes)){
     vax <- data[[1]]$vax
     Sigma <- data[[2]]
     Omega <- data[[3]]
-    scales <- data[[4]]
+    # scales <- data[[4]]
     
     Tx <- NSEstimator(x, dimen)
     Tvax <- NSEstimator(vax, dimen)
     
     # proper candidates of tuning parameters
     # lamseq <- seq(1.5e-09, 0.2, length.out = 100)
-    lamseq <- seq(1e-09, 1e-04, length.out = 2000)
+    lamseq <- seq(1e-09, 1e-04, length.out = 100)
     lambda.list <- list() # a list containing candidates of tuning parameters for each mode 
     for (i in 1:K) {
       lambda.list[[i]] <- lamseq
@@ -325,9 +329,11 @@ for(k in seq_along(sample_sizes)){
     # fit <- Separate.fit(x, lambda.vec = lambda.vec)
     
     # Simulation summary of estimation errors, TPR and TNR
-    out <- simulation.summary(purrr::map2(fit$fit_result, scales, \(x, y) x[[1]]*y), Omega, offdiag = FALSE)
+    # out <- simulation.summary(purrr::map2(fit$fit_result, scales, \(x, y) x[[1]]*y), Omega, offdiag = FALSE)
+    # out <- simulation.summary(fit$fit_result, Omega, offdiag = FALSE)
     # out <- simulation.summary(purrr::map(fit$fit_result, \(x) x[[1]]), purrr::map(fit.T$fit_result, \(x) x[[1]]), offdiag = FALSE)
     # out <- simulation.summary(purrr::map(fit$fit_result, \(x) x[[2]]), purrr::map(fit.T$fit_result, \(x) x[[2]]), offdiag = FALSE)
+    out <- simulation.summary(purrr::map(fit$fit_result, \(x) x[[1]]), Omega, offdiag = FALSE)
     av.error.f[run] <- out$av.error.f
     # av.error.max[run] <- out$av.error.max
     # av.tpr[run] <- out$av.tpr
@@ -338,9 +344,10 @@ for(k in seq_along(sample_sizes)){
     # tpr[run, ] <- out$tpr
     # tnr[run, ] <- out$tnr
     
-    # out2 <- simulation.summary(purrr::map(fit.T$fit_result, \(x) x[[2]]), Sigma, offdiag = FALSE)
-    out <- simulation.summary(purrr::map2(fit.T$fit_result, scales, \(x, y) x[[1]]*y), Omega, offdiag = FALSE)
-    av.error.f.T[run] <- out$av.error.f.T
+    out <- simulation.summary(purrr::map(fit.T$fit_result, \(x) x[[1]]), Omega, offdiag = FALSE)
+    # out <- simulation.summary(fit.T$fit_result, Omega, offdiag = FALSE)
+    # out <- simulation.summary(purrr::map2(fit.T$fit_result, scales, \(x, y) x[[1]]*y), Omega, offdiag = FALSE)
+    av.error.f.T[run] <- out$av.error.f
     # av.error.max.T[run] <- out$av.error.max
     # av.tpr.T[run] <- out$av.tpr
     # av.tnr.T[run] <- out$av.tnr
@@ -354,8 +361,16 @@ for(k in seq_along(sample_sizes)){
   AV.ERROR.F[[k]] <- mean(av.error.f)
   AV.ERROR.F.T[[k]] <- mean(av.error.f.T)
 }
-plot(AV.ERROR.F[[k]], col="green")
-points(AV.ERROR.F.T[[k]], col="red")
+plot(sample_sizes, AV.ERROR.F, col="green", pch=19,
+     ylim = c(min(c(AV.ERROR.F, AV.ERROR.F.T)), max(c(AV.ERROR.F, AV.ERROR.F.T))),
+     ylab = "Average Error Frobenius Norm")
+points(sample_sizes, AV.ERROR.F.T, col="red", pch=19)
+legend("topright", 
+       legend = c("Average Error Frob. Clean", "Average Error Frob. Transformed"), 
+       col = c("green", "red"), 
+       lty = 1, 
+       lwd = 2)
+
 
 
 # estimation error
