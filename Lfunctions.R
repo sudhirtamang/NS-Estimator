@@ -113,8 +113,8 @@ NSEstimator2 <- function(x, dimen){
 tildeOmega <- function(x, dimen, n){
   # x is an array.
   # if dim(x) = c(30, 34, 35, 200) then the first tensor observation is x[, , , 1].
-  # dimen is the dimension of the tensor observation
-  # n is the sample size, or the length of the last dimension of x.
+  # dimen is the dimension of each tensor observation
+  # n is the sample size, or the length of the last dimension of x, for the e.g. before it is 200.
   K <- length(dimen)
   nvars <- prod(dimen)
   fit1 = foreach(k = 1:K, .export = c("x"), .combine = list, .multicombine = TRUE) %dopar% {
@@ -126,8 +126,6 @@ tildeOmega <- function(x, dimen, n){
       # when sample size is large, calculate the sample estimator of the precision matrices
       S.array = array(dim=c(dimen[k], dimen[k], n))
       for (i in 1:n) {
-        # d = 0
-        # eval(parse(text = paste("d=x[", paste(rep(",", K), collapse = ""), "i]"))) # assign the ith observation to d
         d <- do.call("[", c(list(x), rep(list(substitute()), K), i))
         Vi = rTensor::k_unfold(rTensor::as.tensor(d), m = k)@data  # unfold tensor
         S.array[, , i] = Vi %*% t(Vi)
@@ -139,6 +137,7 @@ tildeOmega <- function(x, dimen, n){
     }
     Omega_tilde
   }
+  fit1
 }
 
 
