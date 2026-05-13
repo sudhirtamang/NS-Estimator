@@ -365,6 +365,8 @@ plot(sample_sizes, AV.ERROR.F, col="green", pch=19,
      ylim = c(min(c(AV.ERROR.F, AV.ERROR.F.T)), max(c(AV.ERROR.F, AV.ERROR.F.T))),
      ylab = "Average Error Frobenius Norm")
 points(sample_sizes, AV.ERROR.F.T, col="red", pch=19)
+
+# XXXXXXXXXXX
 legend("topright", 
        legend = c("Average Error Frob. Clean", "Average Error Frob. Transformed"), 
        col = c("green", "red"), 
