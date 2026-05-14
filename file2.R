@@ -14,7 +14,7 @@ library(expm)
 library(rTensor)
 library(doParallel)
 library(furrr)
-plan(multisession, workers = ceiling(availableCores() * .7))
+
 
 source("C:/Users//sudhi//Desktop//Fast and Separable Estimation Replication//replication//Model 1//Separate.fit.R")
 source("C://Users//sudhi//Desktop//Fast and Separable Estimation Replication//replication//Model 1//simulation.summary.R")
@@ -152,7 +152,7 @@ for (run in 1:Run) {
   # purrr::walk(Txtilde_Sk, \(x) print(x))
   
   # ====================================>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-  set.seed(2035)
+  plan(multisession, workers = ceiling(availableCores() * .7))
   RHOs <- seq(-1, 1, 0.01)
   Grho <- vector("double", length(RHOs))
   func1 <- function(n, rho){
@@ -160,11 +160,17 @@ for (run in 1:Run) {
     mean(stats::ecdf(tmp1[, 1])(tmp1[, 1]) * stats::ecdf(tmp1[, 2])(tmp1[, 2]))
   }
   func2 <- function(rho, B, func1){
-    mean(future_map_dbl(1:B, \(idx, rho) func1(rho = rho), rho=rho, n = n, .options = furrr_options(seed = 123)))
+    results <-future_map_dbl(
+      1:B, 
+      \(idx) func1(rho = rho, n = n), # Only 'idx' is iterated
+      .options = furrr_options(seed = 123)
+    )
+    
+    mean(results)
   }
-  Grho <- future_map_dbl(RHOs, func2, B = 10000, func1 = func1)
+  Grho <- future_map_dbl(RHOs, func2, B = 10000, func1 = func1, .options = furrr_options(seed = 123))
   plot(RHOs, Grho)
-  
+  plan(sequential)
 
   
   
