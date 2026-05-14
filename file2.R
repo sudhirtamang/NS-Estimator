@@ -150,7 +150,21 @@ for (run in 1:Run) {
   # purrr::walk(Txtilde_Sk, \(x) print(x))
   
   # ====================================>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-  RHOs <- seq(0, 1, 0.01)
+  set.seed(2035)
+  RHOs <- seq(-1, 1, 0.01)
+  B <- 1000
+  Grho <- vector("double", length(RHOs))
+  for(j in seq_along(RHOs)){
+    func1 <- function(rho){
+      tmp1 <- mvtnorm::rmvnorm(n, mean=c(0, 0), sigma=matrix(c(1, rho, rho, 1), nrow=2))
+      mean(stats::ecdf(tmp1[, 1])(tmp1[, 1]) * stats::ecdf(tmp1[, 2])(tmp1[, 2]))
+    }
+    Grho[[j]] <- sum(purrr::map_dbl(1:B, \(idx, rho) func1(rho = RHOs[[j]])))/B
+  }
+  print(Grho)
+  
+  set.seed(2035)
+  RHOs <- seq(-1, 1, 0.01)
   B <- 1000
   Grho <- vector("double", length(RHOs))
   for(j in seq_along(RHOs)){
@@ -161,6 +175,9 @@ for (run in 1:Run) {
     }
     Grho[[j]] <- TOT1/B
   }
+  print(Grho)
+  
+  
   
   corrected_Txtilde_Sk <- Txtilde_Sk[]
   for(i in 1:dimen[[1]]){
@@ -169,7 +186,10 @@ for (run in 1:Run) {
       corrected_Txtilde_Sk[[1]][i, j] <- RHOs[[which.min(tmp1)]]
     }
   }
-  
+  print(corrected_Txtilde_Sk[[1]])
+  print(unique(c(corrected_Txtilde_Sk[[1]])))
+  print(Txtilde_Sk[[1]])
+  print(unique(c(Txtilde_Sk[[1]])))
   
   Tfit <- Separate.fit(Tx, Tvax, lambda.list = lambda.list)
   
