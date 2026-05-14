@@ -20,9 +20,7 @@ source("C:/Users/sudhi/Desktop/PhD projects/NS-Estimator/Lfunctions.R")
 source("Lfunctions.R")
 
 
-dimen <- c(120, 120)
-n <- 20
-K <- length(dimen)
+
 
 Model <- function(n, seed, dimen) {
 
@@ -76,7 +74,7 @@ Model <- function(n, seed, dimen) {
 # av.tpr <- array(0, dim = c(Run, d)) # averaged true positive rate
 # av.tnr <- array(0, dim = c(Run, d)) # averaged true negative rate
 
-d <- 1
+d <- K
 error.f <- array(0, dim = c(Run, d)) # estimation error in Frobenius norm for each mode
 error.max <- array(0, dim = c(Run, d)) # estimation error in Maximum norm for each mode
 tpr <- array(0, dim = c(Run, d)) # true positive rate for each mode
@@ -89,7 +87,7 @@ tnr <- array(0, dim = c(Run, d)) # true negative rate for each mode
 # av.tpr.T <- array(0, dim = c(Run, d)) # averaged true positive rate
 # av.tnr.T <- array(0, dim = c(Run, d)) # averaged true negative rate
 
-d <- 1
+d <- K
 error.f.T <- array(0, dim = c(Run, d)) # estimation error in Frobenius norm for each mode
 error.max.T <- array(0, dim = c(Run, d)) # estimation error in Maximum norm for each mode
 tpr.T <- array(0, dim = c(Run, d)) # true positive rate for each mode
@@ -97,6 +95,10 @@ tnr.T <- array(0, dim = c(Run, d)) # true negative rate for each mode
 
 
 Run <- 5
+dimen <- c(8, 8)
+n <- 40
+K <- length(dimen)
+run <- 1
 # Run <- 100
 for (run in 1:Run) { 
   print(run)
@@ -117,7 +119,6 @@ for (run in 1:Run) {
   }
   
   
-  xtildeOmega <- tildeOmega(x, dimen, n)
   # Model fitting
   fit <- Separate.fit(x, vax, lambda.list = lambda.list)
 
@@ -138,6 +139,30 @@ for (run in 1:Run) {
   error.max[run, ] <- out$error.max
   tpr[run, ] <- out$tpr
   tnr[run, ] <- out$tnr
+
+  
+  TxtildeOmega <- tildeOmega(Tx, dimen, n)
+  Txtilde_Sk <- purrr::map(1:K, \(k) tilde_Sk(Tx, TxtildeOmega, dimen, k, n))
+  # purrr::walk(TxtildeOmega, \(x) print(dim(x)))
+  # purrr::walk(Txtilde_Sk, \(x) print(dim(x)))
+  # purrr::walk(TxtildeOmega, \(x) print(x))
+  # purrr::walk(Txtilde_Sk, \(x) print(x))
+  
+  # ====================================>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  # ====================================>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+  
   
   
   fit.T <- Separate.fit(Tx, Tvax, lambda.list = lambda.list)
