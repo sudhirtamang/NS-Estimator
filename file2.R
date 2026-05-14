@@ -67,6 +67,11 @@ Model <- function(n, seed, dimen) {
 
 
 
+Run <- 5
+dimen <- c(60, 60)
+n <- 40
+K <- length(dimen)
+run <- 1
 # initialize measurements
 # d <- 1
 # av.error.f <- array(0, dim = c(Run, d)) # averaged estimation error in Frobenius norm
@@ -94,11 +99,6 @@ tpr.T <- array(0, dim = c(Run, d)) # true positive rate for each mode
 tnr.T <- array(0, dim = c(Run, d)) # true negative rate for each mode
 
 
-Run <- 5
-dimen <- c(60, 60)
-n <- 40
-K <- length(dimen)
-run <- 1
 # Run <- 100
 for (run in 1:Run) { 
   print(run)
@@ -150,8 +150,8 @@ for (run in 1:Run) {
   # purrr::walk(Txtilde_Sk, \(x) print(x))
   
   # ====================================>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-  RHOs <- seq(-1, 1, 0.01)
-  B <- 100
+  RHOs <- seq(0, 1, 0.01)
+  B <- 1000
   Grho <- vector("double", length(RHOs))
   for(j in seq_along(RHOs)){
     TOT1 <- 0
@@ -173,7 +173,7 @@ for (run in 1:Run) {
   
   Tfit <- Separate.fit(Tx, Tvax, lambda.list = lambda.list)
   
-  Out1 = glasso(corrected_Txtilde_Sk[[1]], rho = Tfit$lambda[1], penalize.diagonal = FALSE)
+  Out1 = glasso(corrected_Txtilde_Sk[[1]], rho = Tfit$lambda[1], penalize.diagonal = FALSE, thr = 1.0e-4, maxit = 1e4)
   hat_Omega = as.matrix(Out1$wi)
   hat_Omega = hat_Omega / norm(hat_Omega, type = "F")
   
