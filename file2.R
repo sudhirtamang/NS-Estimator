@@ -153,12 +153,12 @@ for (run in 1:Run) {
   set.seed(2035)
   RHOs <- seq(-1, 1, 0.01)
   Grho <- vector("double", length(RHOs))
-  func1 <- function(rho){
+  func1 <- function(n, rho){
     tmp1 <- mvtnorm::rmvnorm(n, mean=c(0, 0), sigma=matrix(c(1, rho, rho, 1), nrow=2))
     mean(stats::ecdf(tmp1[, 1])(tmp1[, 1]) * stats::ecdf(tmp1[, 2])(tmp1[, 2]))
   }
   func2 <- function(rho, B, func1){
-    mean(purrr::map_dbl(1:B, \(idx, rho) func1(rho = rho), rho=rho))
+    mean(purrr::map_dbl(1:B, \(idx, rho) func1(rho = rho), rho=rho, n = n))
   }
   Grho <- purrr::map_dbl(RHOs, func2, B = 10000, func1 = func1)
   plot(RHOs, Grho)
