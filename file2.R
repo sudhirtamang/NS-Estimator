@@ -20,69 +20,84 @@ source("C:/Users/sudhi/Desktop/PhD projects/NS-Estimator/Lfunctions.R")
 source("Lfunctions.R")
 
 
-dimen <- c(65, 65)
-# dimen <- c(5, 5)
+dimen <- c(120, 120)
 n <- 20
 K <- length(dimen)
 
-Omega <- purrr::map2(dimen, 1:K, \(x, y) ChainOmega(x, sd = y*100, norm.type = 2))
-Omega[[2]] <- diag(dimen[[2]])
-Sigma <- purrr::map(Omega, \(x) solve(x))
-Sigma <- purrr::map(Sigma, \(x) x/x[1, 1]) # covariance matrix
-dSigma <- purrr::map(Sigma, \(x) t(chol(x))) # square root of covariance matrix
+Model <- function(n, seed, dimen) {
 
-
-set.seed(seed) 
-
-# Generate data observation
-# training set
-vec_x <- matrix(rnorm(nvars * n), ncol = n) 
-x <- array(0, dim = c(dimen, n))
-for (i in 1:n) {
-  x[, , i] <- array(vec_x[, i], dimen)
-  x[, , i] <- atrans(x[, , i], dSigma)
+  nvars <- prod(dimen) # number of variables
+  K <- length(dimen) # order of X
+  
+  
+  Omega <- purrr::map2(dimen, 1:K, \(x, y) ChainOmega(x, sd = y*100, norm.type = 2))
+  Omega[[2]] <- diag(dimen[[2]])
+  Sigma <- purrr::map(Omega, \(x) solve(x))
+  Sigma <- purrr::map(Sigma, \(x) x/x[1, 1]) # covariance matrix
+  dSigma <- purrr::map(Sigma, \(x) t(chol(x))) # square root of covariance matrix
+  
+  
+  set.seed(seed) 
+  
+  # Generate data observation
+  # training set
+  vec_x <- matrix(rnorm(nvars * n), ncol = n) 
+  x <- array(0, dim = c(dimen, n))
+  for (i in 1:n) {
+    x[, , i] <- array(vec_x[, i], dimen)
+    x[, , i] <- atrans(x[, , i], dSigma)
+  }
+  
+  # validation set
+  vec_vax <- matrix(rnorm(nvars * n), ncol = n) 
+  vax <- array(0, dim = c(dimen, n))
+  for (i in 1:n) {
+    vax[, , i] <- array(vec_vax[, i], dimen)
+    vax[, , i] <- atrans(vax[, , i], dSigma)
+  }
+  
+  
+  result <- list()
+  result$x <- x
+  result$vax <- vax
+  
+  return(list(result, Sigma, Omega))
+  
 }
 
-# validation set
-vec_vax <- matrix(rnorm(nvars * n), ncol = n) 
-vax <- array(0, dim = c(dimen, n))
-for (i in 1:n) {
-  vax[, , i] <- array(vec_vax[, i], dimen)
-  vax[, , i] <- atrans(vax[, , i], dSigma)
-}
 
 
 
-Run <- 5
-# Run <- 100
 
 # initialize measurements
-d <- 1
-av.error.f <- array(0, dim = c(Run, d)) # averaged estimation error in Frobenius norm
-av.error.max <- array(0, dim = c(Run, d)) # averaged estimation error in Maximum norm
-av.tpr <- array(0, dim = c(Run, d)) # averaged true positive rate
-av.tnr <- array(0, dim = c(Run, d)) # averaged true negative rate
+# d <- 1
+# av.error.f <- array(0, dim = c(Run, d)) # averaged estimation error in Frobenius norm
+# av.error.max <- array(0, dim = c(Run, d)) # averaged estimation error in Maximum norm
+# av.tpr <- array(0, dim = c(Run, d)) # averaged true positive rate
+# av.tnr <- array(0, dim = c(Run, d)) # averaged true negative rate
 
-d <- K
+d <- 1
 error.f <- array(0, dim = c(Run, d)) # estimation error in Frobenius norm for each mode
 error.max <- array(0, dim = c(Run, d)) # estimation error in Maximum norm for each mode
 tpr <- array(0, dim = c(Run, d)) # true positive rate for each mode
 tnr <- array(0, dim = c(Run, d)) # true negative rate for each mode
 
+# 
+# d <- 1
+# av.error.f.T <- array(0, dim = c(Run, d)) # averaged estimation error in Frobenius norm
+# av.error.max.T <- array(0, dim = c(Run, d)) # averaged estimation error in Maximum norm
+# av.tpr.T <- array(0, dim = c(Run, d)) # averaged true positive rate
+# av.tnr.T <- array(0, dim = c(Run, d)) # averaged true negative rate
 
 d <- 1
-av.error.f.T <- array(0, dim = c(Run, d)) # averaged estimation error in Frobenius norm
-av.error.max.T <- array(0, dim = c(Run, d)) # averaged estimation error in Maximum norm
-av.tpr.T <- array(0, dim = c(Run, d)) # averaged true positive rate
-av.tnr.T <- array(0, dim = c(Run, d)) # averaged true negative rate
-
-d <- K
 error.f.T <- array(0, dim = c(Run, d)) # estimation error in Frobenius norm for each mode
 error.max.T <- array(0, dim = c(Run, d)) # estimation error in Maximum norm for each mode
 tpr.T <- array(0, dim = c(Run, d)) # true positive rate for each mode
 tnr.T <- array(0, dim = c(Run, d)) # true negative rate for each mode
 
 
+Run <- 5
+# Run <- 100
 for (run in 1:Run) { 
   print(run)
   # Generate training set and validation set
@@ -95,7 +110,7 @@ for (run in 1:Run) {
   Tx <- NSEstimator2(x, dimen)
   Tvax <- NSEstimator2(vax, dimen)
   # proper candidates of tuning parameters
-  lamseq <- seq(1e-09, 1e-04, length.out = 200)
+  lamseq <- seq(1e-09, 1e-04, length.out = 400)
   lambda.list <- list() # a list containing candidates of tuning parameters for each mode 
   for (i in 1:K) {
     lambda.list[[i]] <- lamseq
@@ -114,10 +129,10 @@ for (run in 1:Run) {
   
   # Simulation summary of estimation errors, TPR and TNR
   out <- simulation.summary(fit$Omegahat, Omega, offdiag = FALSE)
-  av.error.f[run] <- out$av.error.f
-  av.error.max[run] <- out$av.error.max
-  av.tpr[run] <- out$av.tpr
-  av.tnr[run] <- out$av.tnr
+  # av.error.f[run] <- out$av.error.f
+  # av.error.max[run] <- out$av.error.max
+  # av.tpr[run] <- out$av.tpr
+  # av.tnr[run] <- out$av.tnr
   
   error.f[run, ] <- out$error.f
   error.max[run, ] <- out$error.max
