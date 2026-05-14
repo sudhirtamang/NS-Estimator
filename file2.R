@@ -20,49 +20,36 @@ source("C:/Users/sudhi/Desktop/PhD projects/NS-Estimator/Lfunctions.R")
 source("Lfunctions.R")
 
 
-dimen <- c(120, 120)
+dimen <- c(65, 65)
+# dimen <- c(5, 5)
 n <- 20
 K <- length(dimen)
 
-Model <- function(n, seed, dimen) {
+Omega <- purrr::map2(dimen, 1:K, \(x, y) ChainOmega(x, sd = y*100, norm.type = 2))
+Omega[[2]] <- diag(dimen[[2]])
+Sigma <- purrr::map(Omega, \(x) solve(x))
+Sigma <- purrr::map(Sigma, \(x) x/x[1, 1]) # covariance matrix
+dSigma <- purrr::map(Sigma, \(x) t(chol(x))) # square root of covariance matrix
 
-  nvars <- prod(dimen) # number of variables
-  K <- length(dimen) # order of X
-  
-  
-  Omega <- purrr::map2(dimen, 1:K, \(x, y) ChainOmega(x, sd = y*100, norm.type = 2))
-  Sigma <- purrr::map(Omega, \(x) solve(x))
-  Sigma <- purrr::map(Sigma, \(x) x/x[1, 1]) # covariance matrix
-  dSigma <- purrr::map(Sigma, \(x) t(chol(x))) # square root of covariance matrix
-  
-  
-  set.seed(seed) 
-  
-  # Generate data observation
-  # training set
-  vec_x <- matrix(rnorm(nvars * n), ncol = n) 
-  x <- array(0, dim = c(dimen, n))
-  for (i in 1:n) {
-    x[, , i] <- array(vec_x[, i], dimen)
-    x[, , i] <- atrans(x[, , i], dSigma)
-  }
-  
-  # validation set
-  vec_vax <- matrix(rnorm(nvars * n), ncol = n) 
-  vax <- array(0, dim = c(dimen, n))
-  for (i in 1:n) {
-    vax[, , i] <- array(vec_vax[, i], dimen)
-    vax[, , i] <- atrans(vax[, , i], dSigma)
-  }
-  
-  result <- list()
-  result$x <- x
-  result$vax <- vax
-  
-  return(list(result, Sigma, Omega))
-  
+
+set.seed(seed) 
+
+# Generate data observation
+# training set
+vec_x <- matrix(rnorm(nvars * n), ncol = n) 
+x <- array(0, dim = c(dimen, n))
+for (i in 1:n) {
+  x[, , i] <- array(vec_x[, i], dimen)
+  x[, , i] <- atrans(x[, , i], dSigma)
 }
 
+# validation set
+vec_vax <- matrix(rnorm(nvars * n), ncol = n) 
+vax <- array(0, dim = c(dimen, n))
+for (i in 1:n) {
+  vax[, , i] <- array(vec_vax[, i], dimen)
+  vax[, , i] <- atrans(vax[, , i], dSigma)
+}
 
 
 
