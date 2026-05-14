@@ -13,6 +13,8 @@ library(glasso)
 library(expm)
 library(rTensor)
 library(doParallel)
+library(furrr)
+plan(multisession, workers = ceiling(availableCores() * .7))
 
 source("C:/Users//sudhi//Desktop//Fast and Separable Estimation Replication//replication//Model 1//Separate.fit.R")
 source("C://Users//sudhi//Desktop//Fast and Separable Estimation Replication//replication//Model 1//simulation.summary.R")
@@ -158,9 +160,9 @@ for (run in 1:Run) {
     mean(stats::ecdf(tmp1[, 1])(tmp1[, 1]) * stats::ecdf(tmp1[, 2])(tmp1[, 2]))
   }
   func2 <- function(rho, B, func1){
-    mean(purrr::map_dbl(1:B, \(idx, rho) func1(rho = rho), rho=rho, n = n))
+    mean(future_map_dbl(1:B, \(idx, rho) func1(rho = rho), rho=rho, n = n, .options = furrr_options(seed = 123)))
   }
-  Grho <- purrr::map_dbl(RHOs, func2, B = 10000, func1 = func1)
+  Grho <- future_map_dbl(RHOs, func2, B = 10000, func1 = func1)
   plot(RHOs, Grho)
   
 
