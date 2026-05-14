@@ -95,7 +95,7 @@ tnr.T <- array(0, dim = c(Run, d)) # true negative rate for each mode
 
 
 Run <- 5
-dimen <- c(8, 8)
+dimen <- c(60, 60)
 n <- 40
 K <- length(dimen)
 run <- 1
@@ -142,6 +142,7 @@ for (run in 1:Run) {
 
   
   TxtildeOmega <- tildeOmega(Tx, dimen, n)
+  TxtildeOmega[[2]] <- diag(dimen[[2]])
   Txtilde_Sk <- purrr::map(1:K, \(k) tilde_Sk(Tx, TxtildeOmega, dimen, k, n))
   # purrr::walk(TxtildeOmega, \(x) print(dim(x)))
   # purrr::walk(Txtilde_Sk, \(x) print(dim(x)))
@@ -149,57 +150,78 @@ for (run in 1:Run) {
   # purrr::walk(Txtilde_Sk, \(x) print(x))
   
   # ====================================>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+  RHOs <- seq(-1, 1, 0.01)
+  B <- 100
+  Grho <- vector("double", length(RHOs))
+  for(j in seq_along(RHOs)){
+    TOT1 <- 0
+    for(i in 1:B){
+      tmp1 <- mvtnorm::rmvnorm(n, mean=c(0, 0), sigma=matrix(c(1, RHOs[[j]], RHOs[[j]], 1), nrow=2))
+      TOT1 <- TOT1 + mean(stats::ecdf(tmp1[, 1])(tmp1[, 1]) * stats::ecdf(tmp1[, 2])(tmp1[, 2]))
+    }
+    Grho[[j]] <- TOT1/B
+  }
+  
+  corrected_Txtilde_Sk <- Txtilde_Sk[]
+  for(i in 1:dimen[[1]]){
+    for(j in 1:dimen[[1]]){
+      tmp1 <- abs(Txtilde_Sk[[1]][i, j] - Grho)
+      corrected_Txtilde_Sk[[1]][i, j] <- RHOs[[which.min(tmp1)]]
+    }
+  }
   
   
+  Tfit <- Separate.fit(Tx, Tvax, lambda.list = lambda.list)
   
+  Out1 = glasso(corrected_Txtilde_Sk[[1]], rho = Tfit$lambda[1], penalize.diagonal = FALSE)
+  hat_Omega = as.matrix(Out1$wi)
+  hat_Omega = hat_Omega / norm(hat_Omega, type = "F")
   
-  
-  
-  
-  
-  
-  
-  
-  
-  # ====================================>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-  
-  
-  
-  fit.T <- Separate.fit(Tx, Tvax, lambda.list = lambda.list)
-  out <- simulation.summary(fit.T$Omegahat, Omega, offdiag = FALSE)
-  av.error.f.T[run] <- out$av.error.f
-  av.error.max.T[run] <- out$av.error.max
-  av.tpr.T[run] <- out$av.tpr
-  av.tnr.T[run] <- out$av.tnr
+  out <- simulation.summary(list(hat_Omega, Omega[[2]]), Omega, offdiag = FALSE)
+  # av.error.f[run] <- out$av.error.f
+  # av.error.max[run] <- out$av.error.max
+  # av.tpr[run] <- out$av.tpr
+  # av.tnr[run] <- out$av.tnr
   
   error.f.T[run, ] <- out$error.f
   error.max.T[run, ] <- out$error.max
   tpr.T[run, ] <- out$tpr
   tnr.T[run, ] <- out$tnr
   
+  
+  
+  
+  # ====================================>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+  
+
+  
 }
 
 # estimation error
-mean(av.error.f)
+# mean(av.error.f)
 colMeans(error.f)
-mean(av.error.max)
+# mean(av.error.max)
 colMeans(error.max)
 
 # TPR and TNR
-mean(av.tpr)
+# mean(av.tpr)
 colMeans(tpr)
-mean(av.tnr)
+# mean(av.tnr)
 colMeans(tnr)
 
 
 # estimation error
-mean(av.error.f.T)
+# mean(av.error.f.T)
 colMeans(error.f.T)
-mean(av.error.max.T)
+# mean(av.error.max.T)
 colMeans(error.max.T)
 
 # TPR and TNR
-mean(av.tpr.T)
+# mean(av.tpr.T)
 colMeans(tpr.T)
-mean(av.tnr.T)
+# mean(av.tnr.T)
 colMeans(tnr.T)
+
+
+
+
