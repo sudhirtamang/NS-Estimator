@@ -38,7 +38,8 @@ tilde_Sk <- function(x, Omega, dimen, k, n){
   Omega.list.sqrt[[k]] <- diag(dimen[[k]])
   tmparr <- array(0, c(dimen[[k]], dimen[[k]], n))
   for (i in 1:n) {
-    Vi <- k_unfold(as.tensor(ttl(as.tensor(x[, , , i]), Omega.list.sqrt,
+    d <- do.call("[", c(list(x), rep(list(substitute()), K), i))
+    Vi <- k_unfold(as.tensor(ttl(as.tensor(d), Omega.list.sqrt,
                                 ms = 1:length(dimen)
     )@data), m = k)@data
     tmparr[, , i] <- Vi %*% t(Vi)
