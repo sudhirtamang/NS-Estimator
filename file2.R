@@ -182,7 +182,7 @@ for (run in 1:Run) {
   }
   plot(c(Txtilde_Sk[[1]]), c(corrected_Txtilde_Sk[[1]]), col="blue", cex=0.65,
        xlab="Original Estimate of Sigma1",
-       ylab="Corrected of the Estimate of Sigma1")
+       ylab="Corrected of the Estimate of Sigma1", asp = 1)
   
   points(c(diag(Txtilde_Sk[[1]])), c(diag(corrected_Txtilde_Sk[[1]])),
          col="red", cex=0.65)
@@ -198,6 +198,11 @@ for (run in 1:Run) {
          bty = "o")
   
   Tfit <- Separate.fit(Tx, Tvax, lambda.list = lambda.list)
+  Out1 <- QUIC::QUIC(corrected_Txtilde_Sk[[1]], Tfit$lambda[1],
+       tol = 1e-4,
+       maxIter = 1000, path=NULL)
+  simulation.summary(list(Out1$X, Omega[[2]]), Omega, offdiag = FALSE)
+  
   
   Out1 = glasso(corrected_Txtilde_Sk[[1]], rho = Tfit$lambda[1], penalize.diagonal = FALSE, thr = 1.0e-4, maxit = 1e4)
   hat_Omega = as.matrix(Out1$wi)
