@@ -187,9 +187,12 @@ for (run in 1:Run) {
   points(c(diag(Txtilde_Sk[[1]])), c(diag(corrected_Txtilde_Sk[[1]])),
          col="red", cex=0.65)
   
+  points(c(Txtilde_Sk[[1]]), c(Txtilde_Sk[[1]]),
+         col="green", cex=0.65)
+  
   legend("topleft", 
-         legend = c("Off-Diagonal", "Diagonal"), 
-         col = c("blue", "red"), 
+         legend = c("Off-Diagonal", "Diagonal", "Original Estimates"), 
+         col = c("blue", "red", "green"), 
          lty = 1,             # Type of line (1 = solid)
          lwd = 2,             # Line width
          bty = "o")
