@@ -22,7 +22,7 @@ source("C:/Users/sudhi/Desktop/PhD projects/NS-Estimator/Lfunctions.R")
 source("Lfunctions.R")
 
 
-
+# XXXXXXXXXXXXXXX
 
 Model <- function(n, seed, dimen) {
 
