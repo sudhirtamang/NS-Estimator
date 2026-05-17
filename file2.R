@@ -180,14 +180,19 @@ for (run in 1:Run) {
       corrected_Txtilde_Sk[[1]][i, j] <- RHOs[[which.min(tmp1)]]
     }
   }
-  plot(c(Txtilde_Sk[[1]]), c(corrected_Txtilde_Sk[[1]]),
+  plot(c(Txtilde_Sk[[1]]), c(corrected_Txtilde_Sk[[1]]), col="blue", cex=0.65,
        xlab="Original Estimate of Sigma1",
        ylab="Corrected of the Estimate of Sigma1")
   
   points(c(diag(Txtilde_Sk[[1]])), c(diag(corrected_Txtilde_Sk[[1]])),
-         col="red")
+         col="red", cex=0.65)
   
-  
+  legend("topleft", 
+         legend = c("Off-Diagonal", "Diagonal"), 
+         col = c("blue", "red"), 
+         lty = 1,             # Type of line (1 = solid)
+         lwd = 2,             # Line width
+         bty = "o")
   
   Tfit <- Separate.fit(Tx, Tvax, lambda.list = lambda.list)
   
