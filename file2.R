@@ -114,7 +114,7 @@ for (run in 1:Run) {
   Tx <- NSEstimator2(x, dimen)
   Tvax <- NSEstimator2(vax, dimen)
   # proper candidates of tuning parameters
-  lamseq <- seq(1e-09, 1e-04, length.out = 400)
+  lamseq <- seq(1e-09, 1e-01, length.out = 400)
   lambda.list <- list() # a list containing candidates of tuning parameters for each mode 
   for (i in 1:K) {
     lambda.list[[i]] <- lamseq
@@ -160,7 +160,7 @@ for (run in 1:Run) {
     mean(stats::ecdf(tmp1[, 1])(tmp1[, 1]) * stats::ecdf(tmp1[, 2])(tmp1[, 2]))
   }
   func2 <- function(rho, B, func1){
-    results <-future_map_dbl(
+    results <- future_map_dbl(
       1:B, 
       \(idx) func1(rho = rho, n = n), # Only 'idx' is iterated
       .options = furrr_options(seed = 123)
@@ -169,7 +169,7 @@ for (run in 1:Run) {
     mean(results)
   }
   Grho <- future_map_dbl(RHOs, func2, B = 10000, func1 = func1, .options = furrr_options(seed = 123))
-  plot(RHOs, Grho)
+  plot(RHOs, Grho, pch=19, cex=0.75)
   plan(sequential)
 
   
