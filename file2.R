@@ -181,8 +181,7 @@ for (run in 1:Run) {
     }
   }
   plot(c(Txtilde_Sk[[1]]), c(corrected_Txtilde_Sk[[1]]), col="blue", cex=0.65,
-       xlab="Original Estimate of Sigma1",
-       ylab="Corrected of the Estimate of Sigma1", asp = 1)
+       xlab="Original Estimate of Sigma1", ylab="", asp = 1)
   
   points(c(diag(Txtilde_Sk[[1]])), c(diag(corrected_Txtilde_Sk[[1]])),
          col="red", cex=0.65)
@@ -197,6 +196,10 @@ for (run in 1:Run) {
          lwd = 2,             # Line width
          bty = "o")
   
+  
+  saveRDS(corrected_Txtilde_Sk, file="C:\\Users\\sudhi\\Desktop\\PhD projects\\NS-Estimator\\corrected_Txtilde_Sk.rds")
+  saveRDS(Txtilde_Sk, file="C:\\Users\\sudhi\\Desktop\\PhD projects\\NS-Estimator\\Txtilde_Sk.rds")
+
   Tfit <- Separate.fit(Tx, Tvax, lambda.list = lambda.list)
   Out1 <- QUIC::QUIC(corrected_Txtilde_Sk[[1]], Tfit$lambda[1],
        tol = 1e-4,
