@@ -30,7 +30,7 @@ Model <- function(n, seed, dimen) {
   
   
   Omega <- purrr::map2(dimen, 1:K, \(x, y) ChainOmega(x, sd = y*100, norm.type = 2))
-  Omega[[2]] <- diag(dimen[[2]])
+  # Omega[[2]] <- diag(dimen[[2]])
   Sigma <- purrr::map(Omega, \(x) solve(x))
   Sigma <- purrr::map(Sigma, \(x) x/x[1, 1]) # covariance matrix
   dSigma <- purrr::map(Sigma, \(x) t(chol(x))) # square root of covariance matrix
