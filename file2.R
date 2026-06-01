@@ -68,10 +68,10 @@ Model <- function(n, seed, dimen) {
 
 
 Run <- 5
-dimen <- c(60, 2)
-dimen <- c(30, 36, 30, 60)
+# dimen <- c(60, 2)
+# dimen <- c(30, 36, 30, 60)
 dimen <- c(60, 60)
-n <- 100
+n <- 40
 K <- length(dimen)
 run <- 1
 # initialize measurements
@@ -110,6 +110,15 @@ for (run in 1:Run) {
   vax <- data[[1]]$vax
   Sigma <- data[[2]]
   Omega <- data[[3]]
+  
+  
+  
+  xtildeOmega <- tildeOmega(x, dimen, n)
+  xtildeOmega[[2]] <- diag(dimen[[2]])
+  xtilde_Sk <- purrr::map(1:K, \(k) tilde_Sk(x, xtildeOmega, dimen, k, n))
+  
+  
+  
   
   Tx <- NSEstimator2(x, dimen)
   Tvax <- NSEstimator2(vax, dimen)
