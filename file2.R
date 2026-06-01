@@ -33,6 +33,7 @@ Model <- function(n, seed, dimen) {
   # Omega[[2]] <- diag(dimen[[2]])
   Sigma <- purrr::map(Omega, \(x) solve(x))
   Sigma <- purrr::map(Sigma, \(x) x/x[1, 1]) # covariance matrix
+  Omega <- purrr::map(Sigma, \(x) solve(x))
   dSigma <- purrr::map(Sigma, \(x) t(chol(x))) # square root of covariance matrix
   
   
