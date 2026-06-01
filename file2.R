@@ -33,7 +33,7 @@ Model <- function(n, seed, dimen) {
   # Omega[[2]] <- diag(dimen[[2]])
   Sigma <- purrr::map(Omega, \(x) solve(x))
   Sigma <- purrr::map(Sigma, \(x) x/x[1, 1]) # covariance matrix
-  # Omega <- purrr::map(Sigma, \(x) solve(x))
+  Omega <- purrr::map(Sigma, \(x) solve(x))
   dSigma <- purrr::map(Sigma, \(x) t(chol(x))) # square root of covariance matrix
   
   
@@ -44,25 +44,23 @@ Model <- function(n, seed, dimen) {
   vec_x <- matrix(rnorm(nvars * n), ncol = n) 
   x <- array(0, dim = c(dimen, n))
   for (i in 1:n) {
-    x[, , i] <- array(vec_x[, i], dimen)
-    x[, , i] <- atrans(x[, , i], dSigma)
+    d <- array(vec_x[, i], dimen)
+    x <- do.call("[<-", c(list(x), rep(list(substitute()), K), list(i, atrans(d, dSigma))))
   }
   
   # validation set
   vec_vax <- matrix(rnorm(nvars * n), ncol = n) 
   vax <- array(0, dim = c(dimen, n))
   for (i in 1:n) {
-    vax[, , i] <- array(vec_vax[, i], dimen)
-    vax[, , i] <- atrans(vax[, , i], dSigma)
+    d <- array(vec_vax[, i], dimen)
+    vax <- do.call("[<-", c(list(vax), rep(list(substitute()), K), list(i, atrans(d, dSigma))))
   }
-  
   
   result <- list()
   result$x <- x
   result$vax <- vax
   
   return(list(result, Sigma, Omega))
-  
 }
 
 
@@ -70,8 +68,10 @@ Model <- function(n, seed, dimen) {
 
 
 Run <- 5
+dimen <- c(60, 2)
+dimen <- c(30, 36, 30, 60)
 dimen <- c(60, 60)
-n <- 40
+n <- 100
 K <- length(dimen)
 run <- 1
 # initialize measurements
@@ -115,6 +115,7 @@ for (run in 1:Run) {
   Tvax <- NSEstimator2(vax, dimen)
   # proper candidates of tuning parameters
   lamseq <- seq(1e-09, 1e-01, length.out = 400)
+  lamseq <- seq(0.0015, 0.1, length.out = 30)
   lambda.list <- list() # a list containing candidates of tuning parameters for each mode 
   for (i in 1:K) {
     lambda.list[[i]] <- lamseq
@@ -136,7 +137,7 @@ for (run in 1:Run) {
   # av.error.max[run] <- out$av.error.max
   # av.tpr[run] <- out$av.tpr
   # av.tnr[run] <- out$av.tnr
-  
+  simulation.summary(fit$Omegahat, Omega, offdiag = FALSE)
   error.f[run, ] <- out$error.f
   error.max[run, ] <- out$error.max
   tpr[run, ] <- out$tpr
