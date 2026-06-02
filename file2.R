@@ -32,8 +32,8 @@ Model <- function(n, seed, dimen) {
   Omega <- purrr::map2(dimen, 1:K, \(x, y) ChainOmega(x, sd = y*100, norm.type = 2))
   # Omega[[2]] <- diag(dimen[[2]])
   Sigma <- purrr::map(Omega, \(x) solve(x))
-  Sigma <- purrr::map(Sigma, \(x) x/x[1, 1]) # covariance matrix
-  Omega <- purrr::map(Sigma, \(x) solve(x))
+  # Sigma <- purrr::map(Sigma, \(x) x/x[1, 1]) # covariance matrix
+  # Omega <- purrr::map(Sigma, \(x) solve(x))
   dSigma <- purrr::map(Sigma, \(x) t(chol(x))) # square root of covariance matrix
   
   
@@ -69,8 +69,9 @@ Model <- function(n, seed, dimen) {
 
 Run <- 5
 # dimen <- c(60, 2)
+dimen <- c(30, 36, 30)
 # dimen <- c(30, 36, 30, 60)
-dimen <- c(60, 60)
+dimen <- c(30, 30)
 n <- 40
 K <- length(dimen)
 run <- 1
@@ -112,19 +113,19 @@ for (run in 1:Run) {
   Omega <- data[[3]]
   
   
+  # 
+  # xtildeOmega <- tildeOmega(x, dimen, n)
+  # xtildeOmega[[2]] <- diag(dimen[[2]])
+  # xtilde_Sk <- purrr::map(1:K, \(k) tilde_Sk(x, xtildeOmega, dimen, k, n))
+  # 
+  # 
   
-  xtildeOmega <- tildeOmega(x, dimen, n)
-  xtildeOmega[[2]] <- diag(dimen[[2]])
-  xtilde_Sk <- purrr::map(1:K, \(k) tilde_Sk(x, xtildeOmega, dimen, k, n))
-  
-  
-  
-  
-  Tx <- NSEstimator2(x, dimen)
-  Tvax <- NSEstimator2(vax, dimen)
+  # 
+  # Tx <- NSEstimator2(x, dimen)
+  # Tvax <- NSEstimator2(vax, dimen)
   # proper candidates of tuning parameters
   lamseq <- seq(1e-09, 1e-01, length.out = 400)
-  lamseq <- seq(0.0015, 0.1, length.out = 30)
+  # lamseq <- seq(0.0015, 0.1, length.out = 30)
   lambda.list <- list() # a list containing candidates of tuning parameters for each mode 
   for (i in 1:K) {
     lambda.list[[i]] <- lamseq
@@ -165,6 +166,7 @@ for (run in 1:Run) {
   plan(multisession, workers = ceiling(availableCores() * .7))
   RHOs <- seq(-1, 1, 0.01)
   Grho <- vector("double", length(RHOs))
+  B <- 10000
   func1 <- function(n, rho){
     tmp1 <- mvtnorm::rmvnorm(n, mean=c(0, 0), sigma=matrix(c(1, rho, rho, 1), nrow=2))
     mean(stats::ecdf(tmp1[, 1])(tmp1[, 1]) * stats::ecdf(tmp1[, 2])(tmp1[, 2]))
@@ -175,10 +177,9 @@ for (run in 1:Run) {
       \(idx) func1(rho = rho, n = n), # Only 'idx' is iterated
       .options = furrr_options(seed = 123)
     )
-    
     mean(results)
   }
-  Grho <- future_map_dbl(RHOs, func2, B = 10000, func1 = func1, .options = furrr_options(seed = 123))
+  Grho <- future_map_dbl(RHOs, func2, B = B, func1 = func1, .options = furrr_options(seed = 123))
   plot(RHOs, Grho, pch=19, cex=0.75)
   plan(sequential)
 
