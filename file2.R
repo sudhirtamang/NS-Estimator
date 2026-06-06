@@ -69,10 +69,10 @@ Model <- function(n, seed, dimen) {
 
 Run <- 5
 # dimen <- c(60, 2)
-dimen <- c(30, 36, 30)
+# dimen <- c(30, 36, 30)
 # dimen <- c(30, 36, 30, 60)
-dimen <- c(30, 30)
-n <- 40
+dimen <- c(100, 4)
+n <- 30
 K <- length(dimen)
 run <- 1
 # initialize measurements
@@ -101,7 +101,7 @@ error.max.T <- array(0, dim = c(Run, d)) # estimation error in Maximum norm for 
 tpr.T <- array(0, dim = c(Run, d)) # true positive rate for each mode
 tnr.T <- array(0, dim = c(Run, d)) # true negative rate for each mode
 
-
+pctOut <- 0.1
 # Run <- 100
 for (run in 1:Run) { 
   print(run)
@@ -113,6 +113,36 @@ for (run in 1:Run) {
   Omega <- data[[3]]
   
   
+  nOut <- ceiling(pctOut * n)
+  idxcontami <- sample(n, nOut)
+  contami <- rt(nOut*nvars, df=10)
+  dim(contami) <- c(dimen, nOut)
+  
+  contamiData <- x[]
+  for(i in seq_along(idxcontami)){
+    contamiData[, , , idxcontami[i]] <- contami[, , , i]
+  }
+  
+  TcontamiData <- NSEstimator(contamiData, dimen)
+  
+  
+  vec_vax <- matrix(rnorm(nvars * n), ncol = n) 
+  vax <- array(0, dim = c(dimen, n))
+  for(i in 1:n) {
+    vax[, , , i] <- atrans(array(vec_vax[, i], dimen), dSigma)
+  }
+  
+  nOut <- ceiling(pctOut * n)
+  idxcontami <- sample(n, nOut)
+  contami <- rt(nOut*nvars, df=10)
+  dim(contami) <- c(dimen, nOut)
+  
+  contamiData <- vax[]
+  for(i in seq_along(idxcontami)){
+    contamiData[, , , idxcontami[i]] <- contami[, , , i]
+  }
+  
+  vax_TcontamiData <- NSEstimator(contamiData, dimen)
   # 
   # xtildeOmega <- tildeOmega(x, dimen, n)
   # xtildeOmega[[2]] <- diag(dimen[[2]])
@@ -121,16 +151,14 @@ for (run in 1:Run) {
   # 
   
   # 
-  # Tx <- NSEstimator2(x, dimen)
-  # Tvax <- NSEstimator2(vax, dimen)
+
   # proper candidates of tuning parameters
-  lamseq <- seq(1e-09, 1e-01, length.out = 400)
+  lamseq <- seq(0.15, 9, length.out = 400)
   # lamseq <- seq(0.0015, 0.1, length.out = 30)
   lambda.list <- list() # a list containing candidates of tuning parameters for each mode 
   for (i in 1:K) {
     lambda.list[[i]] <- lamseq
   }
-  
   
   # Model fitting
   fit <- Separate.fit(x, vax, lambda.list = lambda.list)
@@ -142,18 +170,19 @@ for (run in 1:Run) {
   # fit <- Separate.fit(x, lambda.vec = lambda.vec)
   
   # Simulation summary of estimation errors, TPR and TNR
-  out <- simulation.summary(fit$Omegahat, Omega, offdiag = FALSE)
+  # out <- simulation.summary(list(fit$Omegahat[[1]]), list(Omega[[1]]), offdiag = FALSE)
   # av.error.f[run] <- out$av.error.f
   # av.error.max[run] <- out$av.error.max
   # av.tpr[run] <- out$av.tpr
   # av.tnr[run] <- out$av.tnr
-  simulation.summary(fit$Omegahat, Omega, offdiag = FALSE)
+  simulation.summary(list(fit$Omegahat[[1]]), list(Omega[[1]]), offdiag = FALSE)
   error.f[run, ] <- out$error.f
   error.max[run, ] <- out$error.max
   tpr[run, ] <- out$tpr
   tnr[run, ] <- out$tnr
-
-  
+  # 
+  # Tx <- NSEstimator2(x, dimen)
+  # Tvax <- NSEstimator2(vax, dimen)
   TxtildeOmega <- tildeOmega(Tx, dimen, n)
   TxtildeOmega[[2]] <- diag(dimen[[2]])
   Txtilde_Sk <- purrr::map(1:K, \(k) tilde_Sk(Tx, TxtildeOmega, dimen, k, n))
@@ -192,6 +221,28 @@ for (run in 1:Run) {
       corrected_Txtilde_Sk[[1]][i, j] <- RHOs[[which.min(tmp1)]]
     }
   }
+  
+  corrected_Txtilde_Sk_FINAL <- corrected_Txtilde_Sk[]
+  corrected_Txtilde_Sk_FINAL[[1]] <- as.matrix(nearPD(corrected_Txtilde_Sk[[1]], corr = FALSE)$mat)
+  fit <- Separate.fit(Tx, Tvax, lambda.list = lambda.list)
+  
+  thres <- 1.0e-4
+  maxit <- 1e4
+  
+  
+  rho <- 0.15
+  Out1 <- glasso(corrected_Txtilde_Sk_FINAL[[1]], rho = rho, penalize.diagonal = FALSE, maxit = maxit, thr = thres)
+  hat_Omega <- as.matrix(Out1$wi)
+  # normalization
+  hat_Omega <- hat_Omega / norm(hat_Omega, type = "F")
+
+
+
+  simulation.summary(list(hat_Omega), list(Omega[[1]]), offdiag = FALSE)
+  
+  
+  
+  
   plot(c(Txtilde_Sk[[1]]), c(corrected_Txtilde_Sk[[1]]), col="blue", cex=0.65,
        xlab="Original Estimate of Sigma1", ylab="", asp = 1)
   
