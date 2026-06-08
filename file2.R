@@ -30,10 +30,10 @@ Model <- function(n, seed, dimen) {
   
   
   Omega <- purrr::map2(dimen, 1:K, \(x, y) ChainOmega(x, sd = y*100, norm.type = 2))
-  # Omega[[2]] <- diag(dimen[[2]])
+  Omega[[2]] <- diag(dimen[[2]])
   Sigma <- purrr::map(Omega, \(x) solve(x))
-  # Sigma <- purrr::map(Sigma, \(x) x/x[1, 1]) # covariance matrix
-  # Omega <- purrr::map(Sigma, \(x) solve(x))
+  Sigma <- purrr::map(Sigma, \(x) x/x[1, 1]) # covariance matrix
+  Omega <- purrr::map(Sigma, \(x) solve(x))
   dSigma <- purrr::map(Sigma, \(x) t(chol(x))) # square root of covariance matrix
   
   
@@ -68,13 +68,12 @@ Model <- function(n, seed, dimen) {
 
 
 Run <- 5
-# dimen <- c(60, 2)
-# dimen <- c(30, 36, 30)
-# dimen <- c(30, 36, 30, 60)
 dimen <- c(100, 4)
+# dimen <- c(45, 56)
 n <- 30
 K <- length(dimen)
 run <- 1
+nvars <- prod(dimen)
 # initialize measurements
 # d <- 1
 # av.error.f <- array(0, dim = c(Run, d)) # averaged estimation error in Frobenius norm
@@ -120,29 +119,22 @@ for (run in 1:Run) {
   
   contamiData <- x[]
   for(i in seq_along(idxcontami)){
-    contamiData[, , , idxcontami[i]] <- contami[, , , i]
+    contamiData[, , idxcontami[i]] <- contami[, , i]
   }
   
-  TcontamiData <- NSEstimator(contamiData, dimen)
+  TcontamiData <- NSEstimator2(contamiData, dimen)
   
-  
-  vec_vax <- matrix(rnorm(nvars * n), ncol = n) 
-  vax <- array(0, dim = c(dimen, n))
-  for(i in 1:n) {
-    vax[, , , i] <- atrans(array(vec_vax[, i], dimen), dSigma)
-  }
-  
-  nOut <- ceiling(pctOut * n)
+ 
   idxcontami <- sample(n, nOut)
   contami <- rt(nOut*nvars, df=10)
   dim(contami) <- c(dimen, nOut)
   
-  contamiData <- vax[]
+  contamiDatavax <- vax[]
   for(i in seq_along(idxcontami)){
-    contamiData[, , , idxcontami[i]] <- contami[, , , i]
+    contamiDatavax[, , idxcontami[i]] <- contami[, , i]
   }
   
-  vax_TcontamiData <- NSEstimator(contamiData, dimen)
+  vax_TcontamiData <- NSEstimator2(contamiDatavax, dimen)
   # 
   # xtildeOmega <- tildeOmega(x, dimen, n)
   # xtildeOmega[[2]] <- diag(dimen[[2]])
@@ -153,15 +145,16 @@ for (run in 1:Run) {
   # 
 
   # proper candidates of tuning parameters
-  lamseq <- seq(0.15, 9, length.out = 400)
-  # lamseq <- seq(0.0015, 0.1, length.out = 30)
+  lamseq <- seq(0.0000015, 0.0015, length.out = 300)
+  # lamseq <- seq(0.0015, 0.15, length.out = 300)
   lambda.list <- list() # a list containing candidates of tuning parameters for each mode 
   for (i in 1:K) {
     lambda.list[[i]] <- lamseq
   }
   
   # Model fitting
-  fit <- Separate.fit(x, vax, lambda.list = lambda.list)
+  # fit <- Separate.fit(contamiData, contamiDatavax, lambda.list = lambda.list)
+  fit <- Separate.fit(TcontamiData, vax_TcontamiData, lambda.list = lambda.list)
 
   
   ## If there is no validation set, we can use cv.Separate to tune lambda via cross-validation
@@ -183,7 +176,7 @@ for (run in 1:Run) {
   # 
   # Tx <- NSEstimator2(x, dimen)
   # Tvax <- NSEstimator2(vax, dimen)
-  TxtildeOmega <- tildeOmega(Tx, dimen, n)
+  TxtildeOmega <- tildeOmega(TcontamiData, dimen, n)
   TxtildeOmega[[2]] <- diag(dimen[[2]])
   Txtilde_Sk <- purrr::map(1:K, \(k) tilde_Sk(Tx, TxtildeOmega, dimen, k, n))
   # purrr::walk(TxtildeOmega, \(x) print(dim(x)))
@@ -230,7 +223,7 @@ for (run in 1:Run) {
   maxit <- 1e4
   
   
-  rho <- 0.15
+  rho <- 0.3
   Out1 <- glasso(corrected_Txtilde_Sk_FINAL[[1]], rho = rho, penalize.diagonal = FALSE, maxit = maxit, thr = thres)
   hat_Omega <- as.matrix(Out1$wi)
   # normalization
