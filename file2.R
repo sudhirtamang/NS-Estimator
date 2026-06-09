@@ -68,12 +68,14 @@ Model <- function(n, seed, dimen) {
 
 
 Run <- 5
-dimen <- c(100, 4)
+dimen <- c(110, 2)
+# dimen <- c(30, 36, 30)
 # dimen <- c(45, 56)
 n <- 30
 K <- length(dimen)
 run <- 1
 nvars <- prod(dimen)
+pctOut <- 0.1
 # initialize measurements
 # d <- 1
 # av.error.f <- array(0, dim = c(Run, d)) # averaged estimation error in Frobenius norm
@@ -135,6 +137,9 @@ for (run in 1:Run) {
   }
   
   vax_TcontamiData <- NSEstimator2(contamiDatavax, dimen)
+  
+  Tx <- NSEstimator2(x, dimen)
+  Tvax <- NSEstimator2(vax, dimen)
   # 
   # xtildeOmega <- tildeOmega(x, dimen, n)
   # xtildeOmega[[2]] <- diag(dimen[[2]])
@@ -142,11 +147,11 @@ for (run in 1:Run) {
   # 
   # 
   
-  # 
+  
 
   # proper candidates of tuning parameters
-  lamseq <- seq(0.0000015, 0.0015, length.out = 300)
-  # lamseq <- seq(0.0015, 0.15, length.out = 300)
+  lamseq <- seq(0.00015, 3, length.out = 300)
+  # lamseq <- seq(0.00182, 0.001824, length.out = 100)
   lambda.list <- list() # a list containing candidates of tuning parameters for each mode 
   for (i in 1:K) {
     lambda.list[[i]] <- lamseq
@@ -154,7 +159,9 @@ for (run in 1:Run) {
   
   # Model fitting
   # fit <- Separate.fit(contamiData, contamiDatavax, lambda.list = lambda.list)
-  fit <- Separate.fit(TcontamiData, vax_TcontamiData, lambda.list = lambda.list)
+  # fit <- Separate.fit(TcontamiData, vax_TcontamiData, lambda.list = lambda.list)
+  # fit <- Separate.fit(Tx, Tvax, lambda.list = lambda.list)
+  fit <- Separate.fit(x, vax, lambda.list = lambda.list)
 
   
   ## If there is no validation set, we can use cv.Separate to tune lambda via cross-validation
@@ -169,6 +176,7 @@ for (run in 1:Run) {
   # av.tpr[run] <- out$av.tpr
   # av.tnr[run] <- out$av.tnr
   simulation.summary(list(fit$Omegahat[[1]]), list(Omega[[1]]), offdiag = FALSE)
+  # simulation.summary(list(fit$Omegahat[[2]]), list(Omega[[2]]), offdiag = FALSE)
   error.f[run, ] <- out$error.f
   error.max[run, ] <- out$error.max
   tpr[run, ] <- out$tpr
@@ -176,6 +184,7 @@ for (run in 1:Run) {
   # 
   # Tx <- NSEstimator2(x, dimen)
   # Tvax <- NSEstimator2(vax, dimen)
+  # TxtildeOmega <- tildeOmega(Tx, dimen, n)
   TxtildeOmega <- tildeOmega(TcontamiData, dimen, n)
   TxtildeOmega[[2]] <- diag(dimen[[2]])
   Txtilde_Sk <- purrr::map(1:K, \(k) tilde_Sk(Tx, TxtildeOmega, dimen, k, n))
@@ -193,7 +202,7 @@ for (run in 1:Run) {
     tmp1 <- mvtnorm::rmvnorm(n, mean=c(0, 0), sigma=matrix(c(1, rho, rho, 1), nrow=2))
     mean(stats::ecdf(tmp1[, 1])(tmp1[, 1]) * stats::ecdf(tmp1[, 2])(tmp1[, 2]))
   }
-  func2 <- function(rho, B, func1){
+  func2 <- function(rho, B, func1, n){
     results <- future_map_dbl(
       1:B, 
       \(idx) func1(rho = rho, n = n), # Only 'idx' is iterated
@@ -201,8 +210,9 @@ for (run in 1:Run) {
     )
     mean(results)
   }
-  Grho <- future_map_dbl(RHOs, func2, B = B, func1 = func1, .options = furrr_options(seed = 123))
-  plot(RHOs, Grho, pch=19, cex=0.75)
+  Grho <- future_map_dbl(RHOs, func2, B = B, func1 = func1, n = 200, .options = furrr_options(seed = 123))
+  plot(RHOs, Grho, pch=19, cex=0.75, asp=1)
+  abline(0, 1)
   plan(sequential)
 
   
@@ -223,7 +233,7 @@ for (run in 1:Run) {
   maxit <- 1e4
   
   
-  rho <- 0.3
+  rho <- 0.2
   Out1 <- glasso(corrected_Txtilde_Sk_FINAL[[1]], rho = rho, penalize.diagonal = FALSE, maxit = maxit, thr = thres)
   hat_Omega <- as.matrix(Out1$wi)
   # normalization
