@@ -104,8 +104,7 @@ NSEstimator2 <- function(x, dimen){
   tmp <- array(NA, dim(x))
   for(j in 1:dimen[[1]]){
     for(k in 1:dimen[[2]]){
-        tmpCDF <- stats::ecdf(x[j, k, ])
-        tmp[j, k, ] <- qnorm((n/(n+1)) * tmpCDF(x[j, k, ]))
+        tmp[j, k, ] <- qnorm(rank(x[j, k, ])/(n+1))
     }
   }
   return(tmp)
