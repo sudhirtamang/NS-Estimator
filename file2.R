@@ -198,9 +198,13 @@ for (run in 1:Run) {
   RHOs <- seq(-1, 1, 0.01)
   Grho <- vector("double", length(RHOs))
   B <- 10000
+  # func1 <- function(n, rho){
+  #   tmp1 <- mvtnorm::rmvnorm(n, mean=c(0, 0), sigma=matrix(c(1, rho, rho, 1), nrow=2))
+  #   mean(qnorm((n/(n+1)) * stats::ecdf(tmp1[, 1])(tmp1[, 1]))   * qnorm((n/(n+1)) * stats::ecdf(tmp1[, 2])(tmp1[, 2]))  )
+  # }
   func1 <- function(n, rho){
     tmp1 <- mvtnorm::rmvnorm(n, mean=c(0, 0), sigma=matrix(c(1, rho, rho, 1), nrow=2))
-    mean(qnorm((n/(n+1)) * stats::ecdf(tmp1[, 1])(tmp1[, 1]))   * qnorm((n/(n+1)) * stats::ecdf(tmp1[, 2])(tmp1[, 2]))  )
+    mean(qnorm((1/(n+1)) * rank(tmp1[, 1]))   * qnorm((1/(n+1)) * rank(tmp1[, 2]))  )
   }
   func2 <- function(rho, B, func1, n){
     results <- future_map_dbl(
@@ -210,7 +214,7 @@ for (run in 1:Run) {
     )
     mean(results)
   }
-  Grho <- future_map_dbl(RHOs, func2, B = B, func1 = func1, n = 200, .options = furrr_options(seed = 123))
+  Grho <- future_map_dbl(RHOs, func2, B = B, func1 = func1, n = 50, .options = furrr_options(seed = 123))
   
   ylim <- c(min(c(obj[["g.value"]], Grho)), max(c(obj[["g.value"]], Grho)))
   xlim <- c(min(c(obj[["g.value"]], Grho)), max(c(obj[["g.value"]], Grho)))
