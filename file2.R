@@ -200,7 +200,7 @@ for (run in 1:Run) {
   B <- 10000
   func1 <- function(n, rho){
     tmp1 <- mvtnorm::rmvnorm(n, mean=c(0, 0), sigma=matrix(c(1, rho, rho, 1), nrow=2))
-    mean(stats::ecdf(tmp1[, 1])(tmp1[, 1]) * stats::ecdf(tmp1[, 2])(tmp1[, 2]))
+    mean(qnorm((n/(n+1)) * stats::ecdf(tmp1[, 1])(tmp1[, 1]))   * qnorm((n/(n+1)) * stats::ecdf(tmp1[, 2])(tmp1[, 2]))  )
   }
   func2 <- function(rho, B, func1, n){
     results <- future_map_dbl(
@@ -211,7 +211,11 @@ for (run in 1:Run) {
     mean(results)
   }
   Grho <- future_map_dbl(RHOs, func2, B = B, func1 = func1, n = 200, .options = furrr_options(seed = 123))
-  plot(RHOs, Grho, pch=19, cex=0.75, asp=1)
+  
+  ylim <- c(min(c(obj[["g.value"]], Grho)), max(c(obj[["g.value"]], Grho)))
+  xlim <- c(min(c(obj[["g.value"]], Grho)), max(c(obj[["g.value"]], Grho)))
+  plot(RHOs, Grho, pch=19, cex=0.75, asp=1, ylim=ylim, xlim=xlim, col="red")
+  points(RHOs, obj[["g.value"]], col="green")
   abline(0, 1)
   plan(sequential)
 
