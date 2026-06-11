@@ -71,7 +71,7 @@ Model <- function(n, seed, dimen) {
 Run <- 5
 dimen <- c(150, 4)
 # dimen <- c(30, 36, 30)
-# dimen <- c(45, 56)
+dimen <- c(45, 56)
 n <- 30
 K <- length(dimen)
 run <- 1
@@ -151,7 +151,7 @@ for (run in 1:Run) {
   
 
   # proper candidates of tuning parameters
-  lamseq <- seq(1.5e-5, 1.5, length.out = 300)
+  lamseq <- seq(1.5e-8, 0.15, length.out = 300)
   # lamseq <- seq(0.00182, 0.001824, length.out = 100)
   lambda.list <- list() # a list containing candidates of tuning parameters for each mode 
   for (i in 1:K) {
@@ -161,9 +161,11 @@ for (run in 1:Run) {
   # Model fitting
   # fit <- Separate.fit(contamiData, contamiDatavax, lambda.list = lambda.list)
   # fit <- Separate.fit(TcontamiData, vax_TcontamiData, lambda.list = lambda.list)
-  fit <- Separate.fit(TcontamiData, vax_TcontamiData, lambda.list = lambda.list, Grho=Grho)
+  # fit <- Separate.fit(TcontamiData, vax_TcontamiData, lambda.list = lambda.list, Grho=Grho)
   # fit <- Separate.fit(Tx, Tvax, lambda.list = lambda.list)
-  # fit <- Separate.fit(x, vax, lambda.list = lambda.list)
+  # fit <- Separate.fit(Tx, Tvax, lambda.list = lambda.list, Grho=Grho)
+  fit <- Separate.fit(x, vax, lambda.list = lambda.list)
+  # fit1 <- Separate.fit(x, vax, lambda.list = lambda.list, Grho=Grho)
 
   
   ## If there is no validation set, we can use cv.Separate to tune lambda via cross-validation
@@ -177,7 +179,7 @@ for (run in 1:Run) {
   # av.error.max[run] <- out$av.error.max
   # av.tpr[run] <- out$av.tpr
   # av.tnr[run] <- out$av.tnr
-  simulation.summary(list(fit$Omegahat[[1]]), list(Omega[[1]]), offdiag = FALSE)
+  simulation.summary(list(fit$Omegahat[[1]][[1]]), list(Omega[[1]]), offdiag = FALSE)
   # simulation.summary(list(fit$Omegahat[[2]]), list(Omega[[2]]), offdiag = FALSE)
   error.f[run, ] <- out$error.f
   error.max[run, ] <- out$error.max
@@ -237,13 +239,17 @@ for (run in 1:Run) {
   Txtilde_Sk_val <- purrr::map(1:K, \(k) tilde_Sk(vaxdata, TxtildeOmega, dimen, k, n))
   
   
-  corrected_Txtilde_Sk <- Txtilde_Sk[[1]]
-  for(i in 1:dimen[[1]]){
-    for(j in 1:dimen[[1]]){
-      tmp1 <- abs(Txtilde_Sk[[1]][i, j] - Grho)
+  corrected_Txtilde_Sk <- Tfit[["Omegahat"]][[1]][[2]]
+  corrected_Txtilde_Sk <- sigma.hat.T
+  # corrected_Txtilde_Sk <- Txtilde_Sk[[1]]
+  for(i in 1:dim(corrected_Txtilde_Sk)[[1]]){
+    for(j in 1:dim(corrected_Txtilde_Sk)[[1]]){
+      tmp1 <- abs(corrected_Txtilde_Sk[i, j] - Grho)
       corrected_Txtilde_Sk[i, j] <- RHOs[[which.min(tmp1)]]
     }
   }
+  plot(c(sigma.hat.T), c(corrected_Txtilde_Sk), asp=1)
+  abline(0, 1)
   Txtilde_Sk[[1]] <- corrected_Txtilde_Sk
   # plot(RHOs, Grho)
   # abline(0, 1)
@@ -251,6 +257,8 @@ for (run in 1:Run) {
   # corrected_Txtilde_Sk_FINAL[[1]] <- as.matrix(nearPD(corrected_Txtilde_Sk[[1]], corr = FALSE)$mat)
 
   # Choose a tuning parameter
+  S.mat <- sfit[["Omegahat"]][[1]][[2]]
+  S.mat <- Tfit1[["Omegahat"]][[1]][[2]]
   rhorange <- seq(1.5e-6, 0.1, length.out = 100)
   loglik2 = rep(0, length(rhorange))
   for(i in seq_along(rhorange)){
@@ -265,13 +273,14 @@ for (run in 1:Run) {
     }
   }
   rho.best <- rhorange[[which.max(loglik2)]]
+  rho.best <- 0.015
   # rho.best <- 0.2
   Out1 <- glasso(S.mat, rho = rho.best, penalize.diagonal = FALSE, maxit = maxit, thr = thres)
   # Out1 <- glasso(corrected_Txtilde_Sk_FINAL[[1]], rho = rho.best, penalize.diagonal = FALSE, maxit = maxit, thr = thres)
   hat_Omega <- as.matrix(Out1$wi)
   # normalization
   hat_Omega <- hat_Omega / norm(hat_Omega, type = "F")
-  plot(loglik2)
+  # plot(loglik2)
 
 
   simulation.summary(list(hat_Omega), list(Omega[[1]]), offdiag = FALSE)
