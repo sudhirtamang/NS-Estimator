@@ -32,8 +32,9 @@ Model <- function(n, seed, dimen) {
   Omega <- purrr::map2(dimen, 1:K, \(x, y) ChainOmega(x, sd = y*100, norm.type = 2))
   Omega[[2]] <- diag(dimen[[2]])
   Sigma <- purrr::map(Omega, \(x) solve(x))
+  multiples <- purrr::map_dbl(Sigma, \(x) x[1, 1])
   Sigma <- purrr::map(Sigma, \(x) x/x[1, 1]) # covariance matrix
-  Omega <- purrr::map(Sigma, \(x) solve(x))
+  Omega <- purrr::map2(Omega, multiples, \(x, y) x*y)
   dSigma <- purrr::map(Sigma, \(x) t(chol(x))) # square root of covariance matrix
   
   
@@ -68,7 +69,7 @@ Model <- function(n, seed, dimen) {
 
 
 Run <- 5
-dimen <- c(110, 2)
+dimen <- c(150, 4)
 # dimen <- c(30, 36, 30)
 # dimen <- c(45, 56)
 n <- 30
@@ -150,7 +151,7 @@ for (run in 1:Run) {
   
 
   # proper candidates of tuning parameters
-  lamseq <- seq(0.00015, 3, length.out = 300)
+  lamseq <- seq(1.5e-5, 1.5, length.out = 300)
   # lamseq <- seq(0.00182, 0.001824, length.out = 100)
   lambda.list <- list() # a list containing candidates of tuning parameters for each mode 
   for (i in 1:K) {
@@ -160,8 +161,9 @@ for (run in 1:Run) {
   # Model fitting
   # fit <- Separate.fit(contamiData, contamiDatavax, lambda.list = lambda.list)
   # fit <- Separate.fit(TcontamiData, vax_TcontamiData, lambda.list = lambda.list)
+  fit <- Separate.fit(TcontamiData, vax_TcontamiData, lambda.list = lambda.list, Grho=Grho)
   # fit <- Separate.fit(Tx, Tvax, lambda.list = lambda.list)
-  fit <- Separate.fit(x, vax, lambda.list = lambda.list)
+  # fit <- Separate.fit(x, vax, lambda.list = lambda.list)
 
   
   ## If there is no validation set, we can use cv.Separate to tune lambda via cross-validation
@@ -185,9 +187,7 @@ for (run in 1:Run) {
   # Tx <- NSEstimator2(x, dimen)
   # Tvax <- NSEstimator2(vax, dimen)
   # TxtildeOmega <- tildeOmega(Tx, dimen, n)
-  TxtildeOmega <- tildeOmega(TcontamiData, dimen, n)
-  TxtildeOmega[[2]] <- diag(dimen[[2]])
-  Txtilde_Sk <- purrr::map(1:K, \(k) tilde_Sk(Tx, TxtildeOmega, dimen, k, n))
+
   # purrr::walk(TxtildeOmega, \(x) print(dim(x)))
   # purrr::walk(Txtilde_Sk, \(x) print(dim(x)))
   # purrr::walk(TxtildeOmega, \(x) print(x))
@@ -223,30 +223,55 @@ for (run in 1:Run) {
   abline(0, 1)
   plan(sequential)
 
+
+  # xdata <- contamiData
+  # vaxdata <- contamiDatavax
+  
+  xdata <- TcontamiData
+  vaxdata <- vax_TcontamiData
   
   
-  corrected_Txtilde_Sk <- Txtilde_Sk[]
+  TxtildeOmega <- tildeOmega(xdata, dimen, n)
+  TxtildeOmega[[2]] <- diag(dimen[[2]])
+  Txtilde_Sk <- purrr::map(1:K, \(k) tilde_Sk(xdata, TxtildeOmega, dimen, k, n))
+  Txtilde_Sk_val <- purrr::map(1:K, \(k) tilde_Sk(vaxdata, TxtildeOmega, dimen, k, n))
+  
+  
+  corrected_Txtilde_Sk <- Txtilde_Sk[[1]]
   for(i in 1:dimen[[1]]){
     for(j in 1:dimen[[1]]){
       tmp1 <- abs(Txtilde_Sk[[1]][i, j] - Grho)
-      corrected_Txtilde_Sk[[1]][i, j] <- RHOs[[which.min(tmp1)]]
+      corrected_Txtilde_Sk[i, j] <- RHOs[[which.min(tmp1)]]
     }
   }
-  
-  corrected_Txtilde_Sk_FINAL <- corrected_Txtilde_Sk[]
-  corrected_Txtilde_Sk_FINAL[[1]] <- as.matrix(nearPD(corrected_Txtilde_Sk[[1]], corr = FALSE)$mat)
-  fit <- Separate.fit(Tx, Tvax, lambda.list = lambda.list)
-  
-  thres <- 1.0e-4
-  maxit <- 1e4
-  
-  
-  rho <- 0.2
-  Out1 <- glasso(corrected_Txtilde_Sk_FINAL[[1]], rho = rho, penalize.diagonal = FALSE, maxit = maxit, thr = thres)
+  Txtilde_Sk[[1]] <- corrected_Txtilde_Sk
+  # plot(RHOs, Grho)
+  # abline(0, 1)
+  # corrected_Txtilde_Sk_FINAL <- corrected_Txtilde_Sk[]
+  # corrected_Txtilde_Sk_FINAL[[1]] <- as.matrix(nearPD(corrected_Txtilde_Sk[[1]], corr = FALSE)$mat)
+
+  # Choose a tuning parameter
+  rhorange <- seq(1.5e-6, 0.1, length.out = 100)
+  loglik2 = rep(0, length(rhorange))
+  for(i in seq_along(rhorange)){
+    Out1 = glasso(Txtilde_Sk[[1]], rho = rhorange[[i]], penalize.diagonal = FALSE, maxit = 1e4, thr = 1.0e-4)
+    hat_Omega = Out1$wi
+    loglik2[i] = -tr(Txtilde_Sk_val[[1]] %*% hat_Omega) + log(det(hat_Omega))
+    if (loglik2[i] == Inf) {
+      stop(paste("Infinite value! Please choose a smaller scale for mode", mode_index))
+    }
+    if (loglik2[i] == -Inf) {
+      stop(paste("Negative infinite value! Please choose a larger scale for mode", mode_index))
+    }
+  }
+  rho.best <- rhorange[[which.max(loglik2)]]
+  # rho.best <- 0.2
+  Out1 <- glasso(S.mat, rho = rho.best, penalize.diagonal = FALSE, maxit = maxit, thr = thres)
+  # Out1 <- glasso(corrected_Txtilde_Sk_FINAL[[1]], rho = rho.best, penalize.diagonal = FALSE, maxit = maxit, thr = thres)
   hat_Omega <- as.matrix(Out1$wi)
   # normalization
   hat_Omega <- hat_Omega / norm(hat_Omega, type = "F")
-
+  plot(loglik2)
 
 
   simulation.summary(list(hat_Omega), list(Omega[[1]]), offdiag = FALSE)
