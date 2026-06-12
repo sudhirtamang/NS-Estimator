@@ -159,13 +159,13 @@ for (run in 1:Run) {
   }
   
   # Model fitting
-  # fit <- Separate.fit(contamiData, contamiDatavax, lambda.list = lambda.list)
-  # fit <- Separate.fit(TcontamiData, vax_TcontamiData, lambda.list = lambda.list)
-  # fit <- Separate.fit(TcontamiData, vax_TcontamiData, lambda.list = lambda.list, Grho=Grho)
-  # fit <- Separate.fit(Tx, Tvax, lambda.list = lambda.list)
-  # fit <- Separate.fit(Tx, Tvax, lambda.list = lambda.list, Grho=Grho)
-  fit <- Separate.fit(x, vax, lambda.list = lambda.list)
-  # fit1 <- Separate.fit(x, vax, lambda.list = lambda.list, Grho=Grho)
+  # fit <- Separate.fit.correct(contamiData, contamiDatavax, lambda.list = lambda.list)
+  # fit <- Separate.fit.correct(TcontamiData, vax_TcontamiData, lambda.list = lambda.list)
+  # fit <- Separate.fit.correct(TcontamiData, vax_TcontamiData, lambda.list = lambda.list, Grho=Grho)
+  # fit <- Separate.fit.correct(Tx, Tvax, lambda.list = lambda.list)
+  # fit <- Separate.fit.correct(Tx, Tvax, lambda.list = lambda.list, Grho=Grho)
+  fit <- Separate.fit.correct(x, vax, lambda.list = lambda.list)
+  # fit1 <- Separate.fit.correct(x, vax, lambda.list = lambda.list, Grho=Grho)
 
   
   ## If there is no validation set, we can use cv.Separate to tune lambda via cross-validation
