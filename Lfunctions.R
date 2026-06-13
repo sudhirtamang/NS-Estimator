@@ -32,17 +32,48 @@ omega_from_sample <- function(x, dimen, k, n, normalize=TRUE){
   fit1
 }
 
+
+
+tilde.omega <- function(x, dimen, n){
+  # x is an array.
+  # if dim(x) = c(30, 34, 35, 200) then the first tensor observation is x[, , , 1].
+  # dimen is the dimension of each individual tensor observation
+  # n is the sample size, or the length of the last dimension of x, for the e.g. given above before it is 200.
+  tensor.order <- length(dimen)
+  nvars <- prod(dimen)
+  tilde.omega <- vector("list", tensor.order)
+  for(idx in seq_along(dimen)){
+    # fit1 = foreach(k = 1:K, .export = c("x"), .combine = list, .multicombine = TRUE) %dopar% {
+    # when sample size is small, use the identity matrix
+    if (n * nvars <= ((dimen[idx]**2) * (dimen[idx] - 1) / 2)) {
+      omega <- diag(dimen[idx])
+    }else {
+      # when sample size is large, calculate the sample estimator of the precision matrices
+      S.array <- array(dim=c(dimen[idx], dimen[idx], n))
+      for (i in 1:n) {
+        d <- do.call("[", c(list(x), rep(list(substitute()), tensor.order), i))
+        Vi <- rTensor::k_unfold(rTensor::as.tensor(d), m = idx)@data  # unfold tensor
+        S.array[, , i] <- Vi %*% t(Vi)
+      }
+      S.mat <- apply(S.array, c(1, 2), mean) * dimen[idx] / nvars 
+      omega <- solve(S.mat)
+      tilde.omega[[idx]] <- omega / norm(omega, type = "F")}
+  }
+  tilde.omega
+}
+
+
 # =============================>>>>>>>>>>>>>>>>>>>>
-tilde_Sk <- function(x, Omega, dimen, k, n){
-  K <- length(dimen)
-  Omega.list.sqrt <- purrr::map(Omega, sqrtm)
+tilde.sigma <- function(x, tilde.omega, dimen, idx, n){
+  tensor.order <- length(dimen)
+  Omega.list.sqrt <- purrr::map(tilde.omega, sqrtm)
   Omega.list.sqrt[[k]] <- diag(dimen[[k]])
   tmparr <- array(0, c(dimen[[k]], dimen[[k]], n))
   for (i in 1:n) {
-    d <- do.call("[", c(list(x), rep(list(substitute()), K), i))
+    d <- do.call("[", c(list(x), rep(list(substitute()), tensor.order), i))
     Vi <- k_unfold(as.tensor(ttl(as.tensor(d), Omega.list.sqrt,
                                 ms = 1:length(dimen)
-    )@data), m = k)@data
+    )@data), m = idx)@data
     tmparr[, , i] <- Vi %*% t(Vi)
   }
   apply(tmparr, c(1, 2), mean) * (dimen[k] / prod(dimen))
@@ -110,34 +141,6 @@ NSEstimator2 <- function(x, dimen){
   return(tmp)
 }
 
-
-tilde.omega <- function(x, dimen, n){
-  # x is an array.
-  # if dim(x) = c(30, 34, 35, 200) then the first tensor observation is x[, , , 1].
-  # dimen is the dimension of each individual tensor observation
-  # n is the sample size, or the length of the last dimension of x, for the e.g. given above before it is 200.
-  tensor.order <- length(dimen)
-  nvars <- prod(dimen)
-  tilde.omega <- vector("list", tensor.order)
-  for(idx in seq_along(dimen)){
-  # fit1 = foreach(k = 1:K, .export = c("x"), .combine = list, .multicombine = TRUE) %dopar% {
-    # when sample size is small, use the identity matrix
-    if (n * nvars <= ((dimen[idx]**2) * (dimen[idx] - 1) / 2)) {
-      omega <- diag(dimen[idx])
-    }else {
-      # when sample size is large, calculate the sample estimator of the precision matrices
-      S.array <- array(dim=c(dimen[idx], dimen[idx], n))
-      for (i in 1:n) {
-        d <- do.call("[", c(list(x), rep(list(substitute()), tensor.order), i))
-        Vi <- rTensor::k_unfold(rTensor::as.tensor(d), m = idx)@data  # unfold tensor
-        S.array[, , i] <- Vi %*% t(Vi)
-      }
-      S.mat <- apply(S.array, c(1, 2), mean) * dimen[idx] / nvars 
-      omega <- solve(S.mat)
-      tilde.omega[[idx]] <- omega / norm(omega, type = "F")}
-  }
-  tilde.omega
-}
 
 
 # 
