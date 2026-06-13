@@ -33,6 +33,11 @@ omega_from_sample <- function(x, dimen, k, n, normalize=TRUE){
 }
 
 
+gen.tensor <- function(dSigma, dimen){
+  d <- array(rnorm(prod(dimen)), dimen)
+  tensr::atrans(d, dSigma)
+}
+
 
 tilde.omega <- function(x, dimen, n){
   # x is an array.
