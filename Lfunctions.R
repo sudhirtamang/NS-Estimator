@@ -111,32 +111,32 @@ NSEstimator2 <- function(x, dimen){
 }
 
 
-tildeOmega <- function(x, dimen, n){
+tilde.omega <- function(x, dimen, n){
   # x is an array.
   # if dim(x) = c(30, 34, 35, 200) then the first tensor observation is x[, , , 1].
-  # dimen is the dimension of each tensor observation
-  # n is the sample size, or the length of the last dimension of x, for the e.g. before it is 200.
-  K <- length(dimen)
+  # dimen is the dimension of each individual tensor observation
+  # n is the sample size, or the length of the last dimension of x, for the e.g. given above before it is 200.
+  tensor.order <- length(dimen)
   nvars <- prod(dimen)
-  Omega_tilde <- vector("list", K)
-  for(k in 1:K){
+  tilde.omega <- vector("list", tensor.order)
+  for(idx in seq_along(dimen)){
   # fit1 = foreach(k = 1:K, .export = c("x"), .combine = list, .multicombine = TRUE) %dopar% {
     # when sample size is small, use the identity matrix
-    if (n * nvars < ((dimen[k]**2) * (dimen[k] - 1) / 2)) {
-      Omega_tilde[[k]] <- diag(dimen[k])
+    if (n * nvars <= ((dimen[idx]**2) * (dimen[idx] - 1) / 2)) {
+      omega <- diag(dimen[idx])
     }else {
       # when sample size is large, calculate the sample estimator of the precision matrices
-      S.array <- array(dim=c(dimen[k], dimen[k], n))
+      S.array <- array(dim=c(dimen[idx], dimen[idx], n))
       for (i in 1:n) {
-        d <- do.call("[", c(list(x), rep(list(substitute()), K), i))
-        Vi <- rTensor::k_unfold(rTensor::as.tensor(d), m = k)@data  # unfold tensor
+        d <- do.call("[", c(list(x), rep(list(substitute()), tensor.order), i))
+        Vi <- rTensor::k_unfold(rTensor::as.tensor(d), m = idx)@data  # unfold tensor
         S.array[, , i] <- Vi %*% t(Vi)
       }
-      S.mat <- apply(S.array, c(1, 2), mean) * dimen[k] / nvars 
-      Omega_tilde[[k]] <- solve(S.mat)
-      Omega_tilde[[k]] <- Omega_tilde[[k]] / norm(Omega_tilde[[k]], type = "F")}
+      S.mat <- apply(S.array, c(1, 2), mean) * dimen[idx] / nvars 
+      omega <- solve(S.mat)
+      tilde.omega[[idx]] <- omega / norm(omega, type = "F")}
   }
-  Omega_tilde
+  tilde.omega
 }
 
 
