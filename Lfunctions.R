@@ -67,8 +67,8 @@ tilde.omega <- function(x, dimen, n){
 tilde.sigma <- function(x, tilde.omega, dimen, idx, n){
   tensor.order <- length(dimen)
   Omega.list.sqrt <- purrr::map(tilde.omega, sqrtm)
-  Omega.list.sqrt[[k]] <- diag(dimen[[k]])
-  tmparr <- array(0, c(dimen[[k]], dimen[[k]], n))
+  Omega.list.sqrt[[idx]] <- diag(dimen[[idx]])
+  tmparr <- array(0, c(dimen[[idx]], dimen[[idx]], n))
   for (i in 1:n) {
     d <- do.call("[", c(list(x), rep(list(substitute()), tensor.order), i))
     Vi <- k_unfold(as.tensor(ttl(as.tensor(d), Omega.list.sqrt,
@@ -76,7 +76,7 @@ tilde.sigma <- function(x, tilde.omega, dimen, idx, n){
     )@data), m = idx)@data
     tmparr[, , i] <- Vi %*% t(Vi)
   }
-  apply(tmparr, c(1, 2), mean) * (dimen[k] / prod(dimen))
+  apply(tmparr, c(1, 2), mean) * (dimen[idx] / prod(dimen))
 }
 
 # ============================================>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
