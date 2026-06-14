@@ -62,7 +62,8 @@ tilde.omega <- function(x, dimen, n){
       }
       S.mat <- apply(S.array, c(1, 2), mean) * dimen[idx] / nvars 
       omega <- solve(S.mat)
-      tilde.omega[[idx]] <- omega / norm(omega, type = "F")}
+    }
+    tilde.omega[[idx]] <- omega / norm(omega, type = "F")
   }
   tilde.omega
 }
