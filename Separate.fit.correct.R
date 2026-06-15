@@ -108,6 +108,10 @@ Separate.fit.correct = function(x, val = NULL, est.mode = NULL, lambda.vec = NUL
       }
       S.mat = apply(S.array, c(1, 2), mean) * m.vec[k] / prod(m.vec) # \tilde S_k
       
+
+      
+
+      
       # Calculate \tilde S_k using the validation set
       testS.array = array(0, c(m.vec[k], m.vec[k], n_val))
       for (i in 1:n_val) {
@@ -121,6 +125,26 @@ Separate.fit.correct = function(x, val = NULL, est.mode = NULL, lambda.vec = NUL
       testS.mat = apply(testS.array, c(1, 2), mean) * m.vec[k] / prod(m.vec) # \tilde S_k
       Omega.list.sqrt[[k]] = Omega.sqrt.copy[[k]]
       
+      
+      if(!is.null(Grho) & k == 1){
+        RHOs <- seq(-1, 1, 0.01)
+        for(i in 1:dimen[[1]]){
+          for(j in 1:dimen[[1]]){
+            tmp1 <- abs(S.mat[i, j] - Grho)
+            S.mat[i, j] <- RHOs[[which.min(tmp1)]]
+          }
+        }
+      }
+      
+      if(!is.null(Grho) & k == 1){
+        RHOs <- seq(-1, 1, 0.01)
+        for(i in 1:dimen[[1]]){
+          for(j in 1:dimen[[1]]){
+            tmp1 <- abs(testS.mat[i, j] - Grho)
+            testS.mat[i, j] <- RHOs[[which.min(tmp1)]]
+          }
+        }
+      }
       # fit model with a sequence of lambdas
       lamk = lambda.list[[mode_index]] # a sequence of candidates for lambda_k
       lam.length = length(lamk)
@@ -179,7 +203,7 @@ Separate.fit.correct = function(x, val = NULL, est.mode = NULL, lambda.vec = NUL
         }
       }
     }
-    print(eigen(S.mat)$values)
+
     Out1 = glasso(S.mat, rho = lam.best[mode_ind], penalize.diagonal = FALSE, maxit = maxit, thr = thres)
     hat_Omega = as.matrix(Out1$wi)
     # normalization

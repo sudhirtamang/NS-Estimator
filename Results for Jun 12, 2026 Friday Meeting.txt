@@ -87,7 +87,7 @@ $tnr
 ========================================================================>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 
-
+TR Covariance, variances scaled to 1, sample size of 30
 CLEAN DATA: With No Transformation, With No Correction, dim=c(45, 56)
 $error.f
 [1] 21.3869
