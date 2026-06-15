@@ -5,55 +5,55 @@
 # AUTHOR:   Sudhir T.
 # DATE:     15th June, 2026 
 # ==============================================================================
-# 
-# rm(list = ls())
-# library(Tlasso)
-# library(tensr)
-# library(glasso)
-# library(expm)
-# library(rTensor)
-# library(doParallel)
-# library(furrr)
-# 
-# 
-# source("C:/Users//sudhi//Desktop//Fast and Separable Estimation Replication//replication//Model 1//Separate.fit.R")
-# source("C://Users//sudhi//Desktop//Fast and Separable Estimation Replication//replication//Model 1//simulation.summary.R")
-# source("Lfunctions.R")
-# source("Separate.fit.correct.R")
-# source("Model.R")
-# 
-# 
-# 
-# 
-# 
-# 
-# RUNs <- 2
-# n <- 50
-# dimen <- c(110, 4)
-# K <- length(dimen)
-# tensor.order <- length(dimen)
-# 
-# 
-# plan(multisession, workers = ceiling(availableCores() * .7))
-# RHOs <- seq(-1, 1, 0.01)
-# Grho <- vector("double", length(RHOs))
-# B <- 10000
-# func1 <- function(n, rho){
-#   tmp1 <- mvtnorm::rmvnorm(n, mean=c(0, 0), sigma=matrix(c(1, rho, rho, 1), nrow=2))
-#   mean(qnorm((1/(n+1)) * rank(tmp1[, 1]))   * qnorm((1/(n+1)) * rank(tmp1[, 2]))  )
-# }
-# func2 <- function(rho, B, func1, n){
-#   results <- future_map_dbl(
-#     1:B,
-#     \(idx) func1(rho = rho, n = n), # Only 'idx' is iterated
-#     .options = furrr_options(seed = 123)
-#   )
-#   mean(results)
-# }
-# Grho <- future_map_dbl(RHOs, func2, B = B, func1 = func1, n = 50, .options = furrr_options(seed = 123))
-# plan(sequential)
-# 
-# 
+
+rm(list = ls())
+library(Tlasso)
+library(tensr)
+library(glasso)
+library(expm)
+library(rTensor)
+library(doParallel)
+library(furrr)
+
+
+source("C:/Users//sudhi//Desktop//Fast and Separable Estimation Replication//replication//Model 1//Separate.fit.R")
+source("C://Users//sudhi//Desktop//Fast and Separable Estimation Replication//replication//Model 1//simulation.summary.R")
+source("Lfunctions.R")
+source("Separate.fit.correct.R")
+source("Model.R")
+
+
+
+
+
+
+RUNs <- 300
+n <- 50
+dimen <- c(110, 4)
+K <- length(dimen)
+tensor.order <- length(dimen)
+
+
+plan(multisession, workers = ceiling(availableCores() * .7))
+RHOs <- seq(-1, 1, 0.01)
+Grho <- vector("double", length(RHOs))
+B <- 10000
+func1 <- function(n, rho){
+  tmp1 <- mvtnorm::rmvnorm(n, mean=c(0, 0), sigma=matrix(c(1, rho, rho, 1), nrow=2))
+  mean(qnorm((1/(n+1)) * rank(tmp1[, 1]))   * qnorm((1/(n+1)) * rank(tmp1[, 2]))  )
+}
+func2 <- function(rho, B, func1, n){
+  results <- future_map_dbl(
+    1:B,
+    \(idx) func1(rho = rho, n = n), # Only 'idx' is iterated
+    .options = furrr_options(seed = 123)
+  )
+  mean(results)
+}
+Grho <- future_map_dbl(RHOs, func2, B = B, func1 = func1, n = 50, .options = furrr_options(seed = 123))
+plan(sequential)
+
+
 
 # RUNs <- 1
 d <- 1
@@ -152,48 +152,50 @@ for(run in 1:RUNs){
 }
 
 
-print("Comparison for OMEGA::just sample, no transformation, no correction")
-print(colMeans(error.f))
-print(colMeans(error.max))
-print(colMeans(tpr))
-print(colMeans(tnr))
-print("Comparison for SIGMA::just sample, no transformation, no correction")
-print(colMeans(error.f.sigma))
-print(colMeans(error.max.sigma))
+cat("Comparison for OMEGA::just sample, no transformation, no correction")
+cat("Mean Forb. Diff.:", colMeans(error.f), "SD:", sd(error.f))
+cat("Mean Max. Error:", colMeans(error.max), "SD:", sd(error.max))
+cat("TPR:", colMeans(tpr), "SD:", sd(tpr))
+cat("TNR:", colMeans(tnr), "SD:", sd(tnr))
+cat("Comparison for SIGMA::just sample, no transformation, no correction")
+cat("Mean Forb. Diff.:", colMeans(error.f.sigma), "SD:", sd(error.f.sigma))
+cat("Mean Max. Error:", colMeans(error.max.sigma), "SD:", sd(error.max.sigma))
 
 cat("Range of lambda.best: ", range(lambda.x))
 
 
-print("====================================>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-print("====================================>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-print("====================================>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+cat("====================================>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+cat("====================================>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+cat("====================================>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
 
 
-print("Comparison for OMEGA::with transformation, no correction")
-print(colMeans(error.f.T))
-print(colMeans(error.max.T))
-print(colMeans(tpr.T))
-print(colMeans(tnr.T))
-print("Comparison for SIGMA::with transformation, no correction")
-print(colMeans(error.f.T.sigma))
-print(colMeans(error.max.T.sigma))
+cat("Comparison for OMEGA::with transformation, no correction")
+
+cat("Mean Forb. Diff.:", colMeans(error.f.T), "SD:", sd(error.f.T))
+cat("Mean Max. Error:", colMeans(error.max.T), "SD:", sd(error.max.T))
+cat("TPR:", colMeans(tpr.T), "SD:", sd(tpr.T))
+cat("TNR:", colMeans(tnr.T), "SD:", sd(tnr.T))
+cat("Comparison for SIGMA::with transformation, no correction")
+cat("Mean Forb. Diff.:", colMeans(error.f.T.sigma), "SD:", sd(error.f.T.sigma))
+cat("Mean Max. Error:", colMeans(error.max.T.sigma), "SD:", sd(error.max.T.sigma))
+
+
 
 cat("Range of lambda.best: ", range(lambda.Tx))
 
-print("====================================>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-print("====================================>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-print("====================================>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+cat("====================================>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+cat("====================================>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+cat("====================================>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
 
 
-print("Comparison for OMEGA::with transformation with correction")
-print(colMeans(error.f.T.C))
-print(colMeans(error.max.T.C))
-print(colMeans(tpr.T.C))
-print(colMeans(tnr.T.C))
-print("Comparison for SIGMA::with transformation with correction")
-print(colMeans(error.f.T.C.sigma))
-print(colMeans(error.max.T.C.sigma))
-
+cat("Comparison for OMEGA::with transformation with correction")
+cat("Mean Forb. Diff.:", colMeans(error.f.T.C), "SD:", sd(error.f.T.C))
+cat("Mean Max. Error:", colMeans(error.max.T.C), "SD:", sd(error.max.T.C))
+cat("TPR:", colMeans(tpr.T.C), "SD:", sd(tpr.T.C))
+cat("TNR:", colMeans(tnr.T.C), "SD:", sd(tnr.T.C))
+cat("Comparison for SIGMA::with transformation with correction")
+cat("Mean Forb. Diff.:", colMeans(error.f.T.C.sigma), "SD:", sd(error.f.T.C.sigma))
+cat("Mean Max. Error:", colMeans(error.max.T.C.sigma), "SD:", sd(error.max.T.C.sigma))
 cat("Range of lambda.best: ", range(lambda.Tx.C))
 
 
