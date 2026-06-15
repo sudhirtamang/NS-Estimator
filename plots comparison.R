@@ -7,6 +7,11 @@ Tfit <- Separate.fit(Tx, Tvax, lambda.list = lambda.list)
 Tfit1 <- Separate.fit(Tx, Tvax, lambda.list = lambda.list, Grho=Grho)
 
 
+norm(sfit[["Omegahat"]][[1]][[2]] - Sigma[[1]], type="F")
+norm(Tfit[["Omegahat"]][[1]][[2]] - Sigma[[1]], type="F")
+norm(Tfit1[["Omegahat"]][[1]][[2]] - Sigma[[1]], type="F")
+
+
 
 plot(log(c(Sigma[[1]])), log(c(Sigma[[1]])), main="Compare Sigma", cex=0.5, xlab="True Sigma", ylab="Estimated Sigmas", pch=16)
 abline(0, 1)

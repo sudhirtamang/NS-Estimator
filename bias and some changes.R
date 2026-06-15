@@ -1,6 +1,52 @@
 n<-50
 p<-30
 
+gcdf<-function(n,rho=seq(-1,1,0.01),B=1000){
+  n.rho<-length(rho)
+  g.value<-rep(0,n.rho)
+  for(i.rho in 1:n.rho){
+    rho.tmp<-rho[i.rho]
+    g.value.b<-rep(0,B)
+    for(b in 1:B){
+      W<-matrix(0,n,2)
+      W[,1]<-rnorm(n)
+      W[,2]<-rho.tmp*W[,1]+sqrt(1-rho.tmp^2)*rnorm(n)
+      W.T<-matrix(0,n,2)
+      W.T[,1]<-qnorm(stats::ecdf(W[,1])((W[,1]))* (n/(n+1)) )
+      W.T[,2]<-qnorm(stats::ecdf(W[,2])((W[,2]))* (n/(n+1)) )
+      # W.T[,1]<-qnorm(rank(W[,1])/(n+1))
+      # W.T[,2]<-qnorm(rank(W[,2])/(n+1))
+      g.value.b[b]<-mean(W.T[,1]*W.T[,2])
+    }
+    g.value[i.rho]<-mean(g.value.b)
+  }
+  object<-list(rho=rho,g.value=g.value)
+  object
+}
+
+gr<-function(n,rho=seq(-1,1,0.01),B=1000){
+  n.rho<-length(rho)
+  g.value<-rep(0,n.rho)
+  for(i.rho in 1:n.rho){
+    rho.tmp<-rho[i.rho]
+    g.value.b<-rep(0,B)
+    for(b in 1:B){
+      W<-matrix(0,n,2)
+      W[,1]<-rnorm(n)
+      W[,2]<-rho.tmp*W[,1]+sqrt(1-rho.tmp^2)*rnorm(n)
+      W.T<-matrix(0,n,2)
+      # W.T[,1]<-qnorm(stats::ecdf(W[,1])((W[,1]))* (n/(n+1)) )
+      # W.T[,2]<-qnorm(stats::ecdf(W[,2])((W[,2]))* (n/(n+1)) )
+      W.T[,1]<-qnorm(rank(W[,1])/(n+1))
+      W.T[,2]<-qnorm(rank(W[,2])/(n+1))
+      g.value.b[b]<-mean(W.T[,1]*W.T[,2])
+    }
+    g.value[i.rho]<-mean(g.value.b)
+  }
+  object<-list(rho=rho,g.value=g.value)
+  object
+}
+
 g<-function(n,rho=seq(-1,1,0.01),B=1000){
   n.rho<-length(rho)
   g.value<-rep(0,n.rho)
@@ -45,6 +91,9 @@ sigma.sqrt<-sigma.eigen$vectors%*%diag(sqrt(sigma.eigen$values))%*%t(sigma.eigen
 
 obj<-g(n)
 
+# plot(o[["g.value"]], objcdf[["g.value"]])
+abline(0, 1)
+
 n.rep<-100
 bias.correct<-rep(0,n.rep)
 bias.T<-rep(0,n.rep)
@@ -76,7 +125,9 @@ for(i in 1:p){
     sigma.hat.correct[i,j]<-rho[which.min(abs(g.value-sigma.hat.T[i,j]))]
   }
 }
-
+plot(c(Tfit[["Omegahat"]][[1]][[2]]), c(sigma.hat.correct), asp=1)
+# plot(g.value, Grho)
+abline(0, 1)
 bias.correct[i.rep]<-mean(sigma.hat.correct[1,2]-sigma[1,2])
 bias.T[i.rep]<-mean(sigma.hat.T[1,2]-sigma[1,2])
 bias.ave[i.rep]<-mean(sigma.hat[1,2]-sigma[1,2])

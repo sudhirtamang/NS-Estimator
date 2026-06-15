@@ -31,10 +31,13 @@ source("Model.R")
 
 
 RUNs <- 100
-n <- 40
+n <- 50
 # RUNs <- 1
-dimen <- c(45, 57)
+dimen <- c(110, 4)
+# dimen <- c(36, 200)
+# dimen <- c(45, 57)
 K <- length(dimen)
+tensor.order <- length(dimen)
 
 
 plan(multisession, workers = ceiling(availableCores() * .7))
@@ -100,9 +103,32 @@ plan(sequential)
 
 
 
+
+
+
+
+Sigma <- vector("list", 2)
+Sigma[[1]] <- matrix(0, dimen[[1]], dimen[[1]])
+r <- 0.8
+for(i in 1:dimen[[1]]){
+  for(j in 1:dimen[[1]]){
+    Sigma[[1]][i, j] <- r^abs(i-j)
+  }
+}
+Sigma[[2]] <- diag(dimen[[2]])
+Omega <- purrr::map(Sigma, \(sigma) solve(sigma))
+dSigma <- purrr::map(Sigma, \(x) t(chol(x)))
+
+
+
+
+RUNs <- 1
 Fsfit <- vector("double", RUNs)
 FTfit <- vector("double", RUNs)
 FTfit1 <- vector("double", RUNs)
+Fsfit.diff <- vector("double", RUNs)
+FTfit.diff <- vector("double", RUNs)
+FTfit1.diff <- vector("double", RUNs)
 for(run in 1:RUNs){
   
   print(run)
@@ -111,33 +137,30 @@ for(run in 1:RUNs){
   vax <- data[[1]]$vax
   Sigma <- data[[2]]
   Omega <- data[[3]]
+
+  # x <- array(0, c(dimen, n))
+  # for(i in 1:n){
+  #   x[, , i] <- gen.tensor(dSigma, dimen)
+  # }
+
+
   Tx <- NSEstimator2(x, dimen)
-  Tvax <- NSEstimator2(vax, dimen)
-  
-  
-  
-  # proper candidates of tuning parameters
-  lamseq <- seq(1.5e-8, 0.15, length.out = 300)
-  # lamseq <- seq(0.00182, 0.001824, length.out = 100)
-  lambda.list <- list() # a list containing candidates of tuning parameters for each mode 
-  for (i in 1:K) {
-    lambda.list[[i]] <- lamseq
-  }
+
   
   xtilde.omega <- tilde.omega(x, dimen, n)
   # xtilde.omega[[2]] <- diag(dimen[[2]])
   xtilde_Sk <- tilde.sigma(x, xtilde.omega, dimen, 1, n)
-  Fsfit[[run]] <- norm(xtilde_Sk - Sigma[[1]], type="F")
+  Fsfit.diff[[run]] <- norm(xtilde_Sk - Sigma[[1]], type="F")
+  Fsfit[[run]] <- norm(xtilde_Sk, type="F")
   
   
   Txtilde.omega <- tilde.omega(Tx, dimen, n)
   # Txtilde.omega[[2]] <- diag(dimen[[2]])
   Txtilde_Sk <- tilde.sigma(Tx, Txtilde.omega, dimen, 1, n)
-  FTfit[[run]] <- norm(Txtilde_Sk - Sigma[[1]], type="F")
+  FTfit.diff[[run]] <- norm(Txtilde_Sk - Sigma[[1]], type="F")
+  FTfit[[run]] <- norm(Txtilde_Sk, type="F")
   
-  Tx1tilde.omega <- tilde.omega(Tx, dimen, n)
-  # Tx1tilde.omega[[2]] <- diag(dimen[[2]])
-  Tx1tilde_Sk <- tilde.sigma(Tx, Tx1tilde.omega, dimen, 1, n)
+  Tx1tilde_Sk <- Txtilde_Sk[]
   RHOs <- seq(-1, 1, 0.01)
   for(i in 1:dimen[[1]]){
     for(j in 1:dimen[[1]]){
@@ -145,16 +168,25 @@ for(run in 1:RUNs){
       Tx1tilde_Sk[i, j] <- RHOs[[which.min(tmp1)]]
     }
   }
-  FTfit1[[run]] <- norm(Tx1tilde_Sk - Sigma[[1]], type="F")
-  
-  
+  FTfit1.diff[[run]] <- norm(Tx1tilde_Sk - Sigma[[1]], type="F")
+  FTfit1[[run]] <- norm(Tx1tilde_Sk, type="F")
 
 }
 
 
-cat("Mean Forb. norm diff. of raw sample Est. and True Sigma for p1:", mean(Fsfit),  "And sd:", sd(Fsfit), "With Sample size of", n, "\n\n")
-cat("Mean Forb. norm diff. of transformed sample Est. and True Sigma for p1:", mean(FTfit),   "And sd:", sd(FTfit),"With Sample size of", n, "\n\n")
-cat("Mean Forb. norm diff. of transformed and corrected Est. and True Sigma for p1:", mean(FTfit1),   "And sd:", sd(FTfit1),"With Sample size of", n, "\n\n")
+cat("Mean Forb. norm diff. of raw sample Est. and True Sigma for p1:", mean(Fsfit.diff),  "and sd:", sd(Fsfit.diff), "with a Sample size of", n, "\n\n")
+cat("Mean Forb. norm diff. of transformed sample Est. and True Sigma for p1:", mean(FTfit.diff),   "and sd:", sd(FTfit.diff),"with a Sample size of", n, "\n\n")
+cat("Mean Forb. norm diff. of transformed and corrected Est. and True Sigma for p1:", mean(FTfit1.diff),   "and sd:", sd(FTfit1.diff),"with a Sample size of", n, "\n\n")
+
+norm(Sigma[[1]], type="F")
+
+cat("Mean Forb. norm diff. of raw sample Est. and True Sigma for p1:", mean(Fsfit),  "and sd:", sd(Fsfit), "with a Sample size of", n, "\n\n")
+cat("Mean Forb. norm diff. of transformed sample Est. and True Sigma for p1:", mean(FTfit),   "and sd:", sd(FTfit),"with a Sample size of", n, "\n\n")
+cat("Mean Forb. norm diff. of transformed and corrected Est. and True Sigma for p1:", mean(FTfit1),   "and sd:", sd(FTfit1),"with a Sample size of", n, "\n\n")
+
+
+
+
 
 
 

@@ -18,60 +18,21 @@ library(furrr)
 
 source("C:/Users//sudhi//Desktop//Fast and Separable Estimation Replication//replication//Model 1//Separate.fit.R")
 source("C://Users//sudhi//Desktop//Fast and Separable Estimation Replication//replication//Model 1//simulation.summary.R")
-source("C:/Users/sudhi/Desktop/PhD projects/NS-Estimator/Lfunctions.R")
 source("Lfunctions.R")
+source("Separate.fit.correct.R")
+source("Model.R")
 
 
 
-Model <- function(n, seed, dimen) {
-
-  nvars <- prod(dimen) # number of variables
-  K <- length(dimen) # order of X
-  
-  
-  Omega <- purrr::map2(dimen, 1:K, \(x, y) ChainOmega(x, sd = y*100, norm.type = 2))
-  Omega[[2]] <- diag(dimen[[2]])
-  Sigma <- purrr::map(Omega, \(x) solve(x))
-  multiples <- purrr::map_dbl(Sigma, \(x) x[1, 1])
-  Sigma <- purrr::map(Sigma, \(x) x/x[1, 1]) # covariance matrix
-  Omega <- purrr::map2(Omega, multiples, \(x, y) x*y)
-  dSigma <- purrr::map(Sigma, \(x) t(chol(x))) # square root of covariance matrix
-  
-  
-  set.seed(seed) 
-  
-  # Generate data observation
-  # training set
-  vec_x <- matrix(rnorm(nvars * n), ncol = n) 
-  x <- array(0, dim = c(dimen, n))
-  for (i in 1:n) {
-    d <- array(vec_x[, i], dimen)
-    x <- do.call("[<-", c(list(x), rep(list(substitute()), K), list(i, atrans(d, dSigma))))
-  }
-  
-  # validation set
-  vec_vax <- matrix(rnorm(nvars * n), ncol = n) 
-  vax <- array(0, dim = c(dimen, n))
-  for (i in 1:n) {
-    d <- array(vec_vax[, i], dimen)
-    vax <- do.call("[<-", c(list(vax), rep(list(substitute()), K), list(i, atrans(d, dSigma))))
-  }
-  
-  result <- list()
-  result$x <- x
-  result$vax <- vax
-  
-  return(list(result, Sigma, Omega))
-}
 
 
 
 
 
 Run <- 5
-dimen <- c(150, 4)
+dimen <- c(110, 4)
 # dimen <- c(30, 36, 30)
-dimen <- c(45, 56)
+# dimen <- c(45, 56)
 n <- 30
 K <- length(dimen)
 run <- 1
@@ -151,20 +112,26 @@ for (run in 1:Run) {
   
 
   # proper candidates of tuning parameters
-  lamseq <- seq(1.5e-8, 0.15, length.out = 300)
+  lamseq <- seq(1.5e-4, 4, length.out = 300)
   # lamseq <- seq(0.00182, 0.001824, length.out = 100)
   lambda.list <- list() # a list containing candidates of tuning parameters for each mode 
   for (i in 1:K) {
     lambda.list[[i]] <- lamseq
   }
   
+
+  fit <- Separate.fit.correct(x, vax, lambda.list = lambda.list)
+  # fit <- Separate.fit.correct(Tx, Tvax, lambda.list = lambda.list)
+  # fit <- Separate.fit.correct(Tx, Tvax, lambda.list = lambda.list, Grho=Grho)
+  simulation.summary(list(fit$Omegahat[[1]][[1]]), list(Omega[[1]]), offdiag = FALSE)
+  
   # Model fitting
   # fit <- Separate.fit.correct(contamiData, contamiDatavax, lambda.list = lambda.list)
   # fit <- Separate.fit.correct(TcontamiData, vax_TcontamiData, lambda.list = lambda.list)
   # fit <- Separate.fit.correct(TcontamiData, vax_TcontamiData, lambda.list = lambda.list, Grho=Grho)
   # fit <- Separate.fit.correct(Tx, Tvax, lambda.list = lambda.list)
-  # fit <- Separate.fit.correct(Tx, Tvax, lambda.list = lambda.list, Grho=Grho)
-  fit <- Separate.fit.correct(x, vax, lambda.list = lambda.list)
+  fit <- Separate.fit.correct(Tx, Tvax, lambda.list = lambda.list, Grho=Grho)
+  # fit <- Separate.fit.correct(x, vax, lambda.list = lambda.list)
   # fit1 <- Separate.fit.correct(x, vax, lambda.list = lambda.list, Grho=Grho)
 
   
