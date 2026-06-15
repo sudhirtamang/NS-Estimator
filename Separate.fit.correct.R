@@ -135,6 +135,7 @@ Separate.fit.correct = function(x, val = NULL, est.mode = NULL, lambda.vec = NUL
           }
         }
       }
+      S.mat <- as.matrix(Matrix::nearPD(S.mat)$mat)
       
       if(!is.null(Grho) & k == 1){
         RHOs <- seq(-1, 1, 0.01)
@@ -145,6 +146,8 @@ Separate.fit.correct = function(x, val = NULL, est.mode = NULL, lambda.vec = NUL
           }
         }
       }
+      testS.mat <- as.matrix(Matrix::nearPD(testS.mat)$mat)
+      
       # fit model with a sequence of lambdas
       lamk = lambda.list[[mode_index]] # a sequence of candidates for lambda_k
       lam.length = length(lamk)
@@ -175,7 +178,7 @@ Separate.fit.correct = function(x, val = NULL, est.mode = NULL, lambda.vec = NUL
   c1 = makeCluster(njobs)
   registerDoParallel(c1)
   K1 = length(est.mode)
-  fit_result = foreach(mode_ind = 1:K1, .packages = c("glasso", "rTensor", "expm"), .export = c("x"), .combine = list, .multicombine = TRUE) %dopar% {
+  fit_result = foreach(mode_ind = 1:K1, .packages = c("glasso", "rTensor", "expm", "Matrix"), .export = c("x"), .combine = list, .multicombine = TRUE) %dopar% {
     k = est.mode[mode_ind]
     Omega.list.sqrt = list()
     for (i in 1:K) {
@@ -203,7 +206,8 @@ Separate.fit.correct = function(x, val = NULL, est.mode = NULL, lambda.vec = NUL
         }
       }
     }
-
+    
+    S.mat <- as.matrix(Matrix::nearPD(S.mat)$mat)
     Out1 = glasso(S.mat, rho = lam.best[mode_ind], penalize.diagonal = FALSE, maxit = maxit, thr = thres)
     hat_Omega = as.matrix(Out1$wi)
     # normalization
