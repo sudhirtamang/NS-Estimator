@@ -5,7 +5,7 @@
 # AUTHOR:   Sudhir T.
 # DATE:     15th June, 2026 
 # ==============================================================================
-
+# 
 rm(list = ls())
 library(Tlasso)
 library(tensr)
@@ -27,9 +27,11 @@ source("Model.R")
 
 
 
-RUNs <- 300
+RUNs <- 100
 n <- 50
-dimen <- c(110, 4)
+dimen <- c(45, 200)
+# dimen <- c(110, 4)
+
 K <- length(dimen)
 tensor.order <- length(dimen)
 
@@ -57,6 +59,7 @@ plan(sequential)
 
 # RUNs <- 1
 d <- 1
+# d <- K
 lambda.x <- array(0, dim = c(RUNs, d))
 error.f <- array(0, dim = c(RUNs, d)) # estimation error in Frobenius norm for each mode
 error.f.sigma <- array(0, dim = c(RUNs, d)) # estimation error in Frobenius norm for each mode
@@ -67,6 +70,7 @@ tnr <- array(0, dim = c(RUNs, d)) # true negative rate for each mode
 
 
 d <- 1
+# d <- K
 lambda.Tx <- array(0, dim = c(RUNs, d))
 error.f.T <- array(0, dim = c(RUNs, d)) # averaged estimation error in Frobenius norm
 error.f.T.sigma <- array(0, dim = c(RUNs, d)) # averaged estimation error in Frobenius norm
@@ -76,6 +80,7 @@ tpr.T <- array(0, dim = c(RUNs, d)) # averaged true positive rate
 tnr.T <- array(0, dim = c(RUNs, d)) # averaged true negative rate
 
 d <- 1
+# d <- K
 lambda.Tx.C <- array(0, dim = c(RUNs, d))
 error.f.T.C <- array(0, dim = c(RUNs, d)) # estimation error in Frobenius norm for each mode
 error.f.T.C.sigma <- array(0, dim = c(RUNs, d)) # estimation error in Frobenius norm for each mode
@@ -86,18 +91,22 @@ tnr.T.C <- array(0, dim = c(RUNs, d)) # true negative rate for each mode
 
 
 # proper candidates of tuning parameters
-lamseq <- seq(1.5e-4, 4, length.out = 300)
+lamseq <- seq(1.5e-6, 1e-2, length.out = 300)
 lambda.list <- list() # a list containing candidates of tuning parameters for each mode
 for (i in 1:K) {
   lambda.list[[i]] <- lamseq
 }
 
+lamseq.C <- seq(1.5e-6, 1e-2, length.out = 300)
+lambda.list.C <- list() # a list containing candidates of tuning parameters for each mode
+for (i in 1:K) {
+  lambda.list.C[[i]] <- lamseq.C
+}
 
-
-for(run in 1:RUNs){
-
-  print(run)
-  data <- Model(n, run * 123456, dimen)
+for(itr in 1:RUNs){
+  
+  print(itr)
+  data <- Model(n, itr * 123456, dimen)
   x <- data[[1]]$x
   vax <- data[[1]]$vax
   Sigma <- data[[2]]
@@ -109,94 +118,98 @@ for(run in 1:RUNs){
   
   fitx <- Separate.fit.correct(x, vax, lambda.list = lambda.list)
   fitTx <- Separate.fit.correct(Tx, Tvax, lambda.list = lambda.list)
-  fitTx.C <- Separate.fit.correct(Tx, Tvax, lambda.list = lambda.list, Grho=Grho)
+  fitTx.C <- Separate.fit.correct(Tx, Tvax, lambda.list = lambda.list.C, Grho=Grho)
   
   
   
   outx <- simulation.summary(list(fitx$Omegahat[[1]][[1]]), list(Omega[[1]]), offdiag = FALSE)
   outx.sigma <- simulation.summary(list(fitx$Omegahat[[1]][[2]]), list(Sigma[[1]]), offdiag = FALSE)
-  error.f[run, 1] <- outx$error.f
-  error.max[run, 1] <- outx$error.max
-  tpr[run, 1] <- outx$tpr
-  tnr[run, 1] <- outx$tnr
+  error.f[itr, 1] <- outx$error.f
+  error.max[itr, 1] <- outx$error.max
+  tpr[itr, 1] <- outx$tpr
+  tnr[itr, 1] <- outx$tnr
   
-  error.f.sigma[run, 1] <- outx.sigma$error.f
-  error.max.sigma[run, 1] <- outx.sigma$error.max
+  error.f.sigma[itr, 1] <- outx.sigma$error.f
+  error.max.sigma[itr, 1] <- outx.sigma$error.max
   
-  lambda.x[run, 1] <- fitx$lambda[[1]]
+  lambda.x[itr, 1] <- fitx$lambda[[1]]
   
   
   outTx <- simulation.summary(list(fitTx$Omegahat[[1]][[1]]), list(Omega[[1]]), offdiag = FALSE)
   outTx.sigma <- simulation.summary(list(fitTx$Omegahat[[1]][[2]]), list(Sigma[[1]]), offdiag = FALSE)
-  error.f.T[run, 1] <- outTx$error.f
-  error.max.T[run, 1] <- outTx$error.max
-  tpr.T[run, 1] <- outTx$tpr
-  tnr.T[run, 1] <- outTx$tnr
+  error.f.T[itr, 1] <- outTx$error.f
+  error.max.T[itr, 1] <- outTx$error.max
+  tpr.T[itr, 1] <- outTx$tpr
+  tnr.T[itr, 1] <- outTx$tnr
   
-  error.f.T.sigma[run, 1] <- outTx.sigma$error.f
-  error.max.T.sigma[run, 1] <- outTx.sigma$error.max
+  error.f.T.sigma[itr, 1] <- outTx.sigma$error.f
+  error.max.T.sigma[itr, 1] <- outTx.sigma$error.max
   
-  lambda.Tx[run, 1] <- fitTx$lambda[[1]]
+  lambda.Tx[itr, 1] <- fitTx$lambda[[1]]
   
   outTx.C <- simulation.summary(list(fitTx.C$Omegahat[[1]][[1]]), list(Omega[[1]]), offdiag = FALSE)
   outTx.C.sigma <- simulation.summary(list(fitTx.C$Omegahat[[1]][[2]]), list(Sigma[[1]]), offdiag = FALSE)
-  error.f.T.C[run, 1] <- outTx.C$error.f
-  error.max.T.C[run, 1] <- outTx.C$error.max
-  tpr.T.C[run, 1] <- outTx.C$tpr
-  tnr.T.C[run, 1] <- outTx.C$tnr
+  error.f.T.C[itr, 1] <- outTx.C$error.f
+  error.max.T.C[itr, 1] <- outTx.C$error.max
+  tpr.T.C[itr, 1] <- outTx.C$tpr
+  tnr.T.C[itr, 1] <- outTx.C$tnr
   
-  error.f.T.C.sigma[run, 1] <- outTx.C.sigma$error.f
-  error.max.T.C.sigma[run, 1] <- outTx.C.sigma$error.max
+  error.f.T.C.sigma[itr, 1] <- outTx.C.sigma$error.f
+  error.max.T.C.sigma[itr, 1] <- outTx.C.sigma$error.max
   
-  lambda.Tx.C[run, 1] <- fitTx.C$lambda[[1]]
+  lambda.Tx.C[itr, 1] <- fitTx.C$lambda[[1]]
 }
 
 
-cat("Comparison for OMEGA::just sample, no transformation, no correction")
-cat("Mean Forb. Diff.:", colMeans(error.f), "SD:", sd(error.f))
-cat("Mean Max. Error:", colMeans(error.max), "SD:", sd(error.max))
-cat("TPR:", colMeans(tpr), "SD:", sd(tpr))
-cat("TNR:", colMeans(tnr), "SD:", sd(tnr))
-cat("Comparison for SIGMA::just sample, no transformation, no correction")
-cat("Mean Forb. Diff.:", colMeans(error.f.sigma), "SD:", sd(error.f.sigma))
-cat("Mean Max. Error:", colMeans(error.max.sigma), "SD:", sd(error.max.sigma))
+cat("Comparison for OMEGA::just sample, no transformation, no correction", "\n")
+cat("Mean Forb. Diff.:", colMeans(error.f), "SD:", sd(error.f), "\n")
+cat("Mean Max. Error:", colMeans(error.max), "SD:", sd(error.max), "\n")
+cat("TPR:", colMeans(tpr), "SD:", sd(tpr), "\n")
+cat("TNR:", colMeans(tnr), "SD:", sd(tnr), "\n")
+cat("Comparison for SIGMA::just sample, no transformation, no correction", "\n")
+cat("Range of lambda.best: ", sprintf("[%.10e, %.10e]\n", min(lambda.x), max(lambda.x)), "\n\n")
 
-cat("Range of lambda.best: ", range(lambda.x))
-
-
-cat("====================================>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-cat("====================================>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-cat("====================================>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-
-
-cat("Comparison for OMEGA::with transformation, no correction")
-
-cat("Mean Forb. Diff.:", colMeans(error.f.T), "SD:", sd(error.f.T))
-cat("Mean Max. Error:", colMeans(error.max.T), "SD:", sd(error.max.T))
-cat("TPR:", colMeans(tpr.T), "SD:", sd(tpr.T))
-cat("TNR:", colMeans(tnr.T), "SD:", sd(tnr.T))
-cat("Comparison for SIGMA::with transformation, no correction")
-cat("Mean Forb. Diff.:", colMeans(error.f.T.sigma), "SD:", sd(error.f.T.sigma))
-cat("Mean Max. Error:", colMeans(error.max.T.sigma), "SD:", sd(error.max.T.sigma))
+cat("Mean Forb. Diff.:", colMeans(error.f.sigma), "SD:", sd(error.f.sigma), "\n")
+cat("Mean Max. Error:", colMeans(error.max.sigma), "SD:", sd(error.max.sigma), "\n")
 
 
 
-cat("Range of lambda.best: ", range(lambda.Tx))
-
-cat("====================================>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-cat("====================================>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-cat("====================================>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+cat("====================================>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", "\n")
+cat("====================================>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", "\n")
+cat("====================================>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", "\n")
 
 
-cat("Comparison for OMEGA::with transformation with correction")
-cat("Mean Forb. Diff.:", colMeans(error.f.T.C), "SD:", sd(error.f.T.C))
-cat("Mean Max. Error:", colMeans(error.max.T.C), "SD:", sd(error.max.T.C))
-cat("TPR:", colMeans(tpr.T.C), "SD:", sd(tpr.T.C))
-cat("TNR:", colMeans(tnr.T.C), "SD:", sd(tnr.T.C))
-cat("Comparison for SIGMA::with transformation with correction")
-cat("Mean Forb. Diff.:", colMeans(error.f.T.C.sigma), "SD:", sd(error.f.T.C.sigma))
-cat("Mean Max. Error:", colMeans(error.max.T.C.sigma), "SD:", sd(error.max.T.C.sigma))
-cat("Range of lambda.best: ", range(lambda.Tx.C))
+cat("Comparison for OMEGA::with transformation, no correction", "\n")
+
+cat("Mean Forb. Diff.:", colMeans(error.f.T), "SD:", sd(error.f.T), "\n")
+cat("Mean Max. Error:", colMeans(error.max.T), "SD:", sd(error.max.T), "\n")
+cat("TPR:", colMeans(tpr.T), "SD:", sd(tpr.T), "\n")
+cat("TNR:", colMeans(tnr.T), "SD:", sd(tnr.T), "\n")
+cat("Range of lambda.best: ", sprintf("[%.10e, %.10e]\n", min(lambda.Tx), max(lambda.Tx)), "\n\n")
+
+cat("Comparison for SIGMA::with transformation, no correction", "\n")
+cat("Mean Forb. Diff.:", colMeans(error.f.T.sigma), "SD:", sd(error.f.T.sigma), "\n")
+cat("Mean Max. Error:", colMeans(error.max.T.sigma), "SD:", sd(error.max.T.sigma), "\n")
+
+
+
+
+cat("====================================>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", "\n")
+cat("====================================>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", "\n")
+cat("====================================>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", "\n")
+
+
+cat("Comparison for OMEGA::with transformation with correction", "\n")
+cat("Mean Forb. Diff.:", colMeans(error.f.T.C), "SD:", sd(error.f.T.C), "\n")
+cat("Mean Max. Error:", colMeans(error.max.T.C), "SD:", sd(error.max.T.C), "\n")
+cat("TPR:", colMeans(tpr.T.C), "SD:", sd(tpr.T.C), "\n")
+cat("TNR:", colMeans(tnr.T.C), "SD:", sd(tnr.T.C), "\n")
+cat("Range of lambda.best: ", sprintf("[%.10e, %.10e]\n", min(lambda.Tx.C), max(lambda.Tx.C)), "\n\n")
+
+cat("Comparison for SIGMA::with transformation with correction", "\n")
+cat("Mean Forb. Diff.:", colMeans(error.f.T.C.sigma), "SD:", sd(error.f.T.C.sigma), "\n")
+cat("Mean Max. Error:", colMeans(error.max.T.C.sigma), "SD:", sd(error.max.T.C.sigma), "\n")
+
 
 
 
