@@ -2,6 +2,7 @@
 # PROJECT:  NS-Estimator
 # SCRIPT:   compareSigmaOmega.R
 # PURPOSE:  With reasonable number of replicates find the Frobenius norm of difference in estimated Sigma/Omega and True Sigma/Omega
+#           Mostly the Simulation is done with second Sigma as Identity
 # AUTHOR:   Sudhir T.
 # DATE:     15th June, 2026 
 # ==============================================================================
@@ -16,8 +17,8 @@ library(doParallel)
 library(furrr)
 
 
-source("C:/Users//sudhi//Desktop//Fast and Separable Estimation Replication//replication//Model 1//Separate.fit.R")
-source("C://Users//sudhi//Desktop//Fast and Separable Estimation Replication//replication//Model 1//simulation.summary.R")
+source("Separate.fit.R")
+source("simulation.summary.R")
 source("Lfunctions.R")
 source("Separate.fit.correct.R")
 source("Model.R")
@@ -26,10 +27,11 @@ source("Model.R")
 
 
 
-
+pctOut <- 0.1
 RUNs <- 100
 n <- 50
-dimen <- c(45, 200)
+dimen <- c(45, 54)
+nvars <- prod(dimen)
 # dimen <- c(110, 4)
 
 K <- length(dimen)
@@ -61,6 +63,8 @@ plan(sequential)
 d <- 1
 # d <- K
 lambda.x <- array(0, dim = c(RUNs, d))
+est.sigma <- array(0, dim = c(RUNs, d))
+est.omega <- array(0, dim = c(RUNs, d))
 error.f <- array(0, dim = c(RUNs, d)) # estimation error in Frobenius norm for each mode
 error.f.sigma <- array(0, dim = c(RUNs, d)) # estimation error in Frobenius norm for each mode
 error.max <- array(0, dim = c(RUNs, d)) # estimation error in Maximum norm for each mode
@@ -72,6 +76,8 @@ tnr <- array(0, dim = c(RUNs, d)) # true negative rate for each mode
 d <- 1
 # d <- K
 lambda.Tx <- array(0, dim = c(RUNs, d))
+est.sigma.T <- array(0, dim = c(RUNs, d))
+est.omega.T <- array(0, dim = c(RUNs, d))
 error.f.T <- array(0, dim = c(RUNs, d)) # averaged estimation error in Frobenius norm
 error.f.T.sigma <- array(0, dim = c(RUNs, d)) # averaged estimation error in Frobenius norm
 error.max.T <- array(0, dim = c(RUNs, d)) # averaged estimation error in Maximum norm
@@ -82,6 +88,8 @@ tnr.T <- array(0, dim = c(RUNs, d)) # averaged true negative rate
 d <- 1
 # d <- K
 lambda.Tx.C <- array(0, dim = c(RUNs, d))
+est.sigma.T.C <- array(0, dim = c(RUNs, d))
+est.omega.T.C <- array(0, dim = c(RUNs, d))
 error.f.T.C <- array(0, dim = c(RUNs, d)) # estimation error in Frobenius norm for each mode
 error.f.T.C.sigma <- array(0, dim = c(RUNs, d)) # estimation error in Frobenius norm for each mode
 error.max.T.C <- array(0, dim = c(RUNs, d)) # estimation error in Maximum norm for each mode
@@ -89,15 +97,68 @@ error.max.T.C.sigma <- array(0, dim = c(RUNs, d)) # estimation error in Maximum 
 tpr.T.C <- array(0, dim = c(RUNs, d)) # true positive rate for each mode
 tnr.T.C <- array(0, dim = c(RUNs, d)) # true negative rate for each mode
 
+# d <- 1
+# av.error.f <- array(0, dim = c(RUNss, d)) # averaged estimation error in Frobenius norm
+# av.error.f.sigma <- array(0, dim = c(RUNs, d)) 
+# av.error.max <- array(0, dim = c(RUNs, d)) # averaged estimation error in Maximum norm
+# av.error.max.sigma <- array(0, dim = c(RUNs, d)) 
+# av.tpr <- array(0, dim = c(RUNs, d)) # averaged true positive rate
+# av.tnr <- array(0, dim = c(RUNs, d)) # averaged true negative rate
+# 
+# d <- K
+# error.f.sigma <- array(0, dim = c(RUNs, d)) # estimation error in Frobenius norm for each mode
+# error.max.sigma <- array(0, dim = c(RUNs, d)) 
+# tpr <- array(0, dim = c(RUNs, d)) # true positive rate for each mode
+# tnr <- array(0, dim = c(RUNs, d)) # true negative rate for each mode
+# f.sigma <- array(0, dim = c(RUNs, d))
+# f.omega <- array(0, dim = c(RUNs, d))
+# 
+# # ==========>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+# d <- 1
+# av.error.f.Tx <- array(0, dim = c(RUNs, d)) # averaged estimation error in Frobenius norm
+# av.error.f.sigma.Tx <- array(0, dim = c(RUNs, d)) 
+# av.error.max.Tx <- array(0, dim = c(RUNs, d)) # averaged estimation error in Maximum norm
+# av.error.max.sigma.Tx <- array(0, dim = c(RUNs, d)) 
+# av.tpr.Tx <- array(0, dim = c(RUNs, d)) # averaged true positive rate
+# av.tnr.Tx <- array(0, dim = c(RUNs, d)) # averaged true negative rate
+# 
+# 
+# d <- K
+# error.f.sigma.Tx <- array(0, dim = c(RUNs, d)) # estimation error in Frobenius norm for each mode
+# error.max.sigma.Tx <- array(0, dim = c(RUNs, d)) 
+# tpr.Tx <- array(0, dim = c(RUNs, d)) # true positive rate for each mode
+# tnr.Tx <- array(0, dim = c(RUNs, d)) # true negative rate for each mode
+# f.sigma.Tx <- array(0, dim = c(RUNs, d))
+# f.omega.Tx <- array(0, dim = c(RUNs, d))
+# 
+# # ==========>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+# d <- 1
+# av.error.f.Tx.C <- array(0, dim = c(RUNs, d)) # averaged estimation error in Frobenius norm
+# av.error.f.sigma.Tx.C <- array(0, dim = c(RUNs, d)) 
+# av.error.max.Tx.C <- array(0, dim = c(RUNs, d)) # averaged estimation error in Maximum norm
+# av.error.max.sigma.Tx.C <- array(0, dim = c(RUNs, d)) 
+# av.tpr.Tx.C <- array(0, dim = c(RUNs, d)) # averaged true positive rate
+# av.tnr.Tx.C <- array(0, dim = c(RUNs, d)) # averaged true negative rate
+# 
+# d <- K
+# error.f.sigma.Tx.C <- array(0, dim = c(RUNs, d)) # estimation error in Frobenius norm for each mode
+# error.max.sigma.Tx.C <- array(0, dim = c(RUNs, d)) 
+# tpr.Tx.C <- array(0, dim = c(RUNs, d)) # true positive rate for each mode
+# tnr.Tx.C <- array(0, dim = c(RUNs, d)) # true negative rate for each mode
+# f.sigma.Tx.C <- array(0, dim = c(RUNs, d))
+# f.omega.Tx.C <- array(0, dim = c(RUNs, d))
+
+# ==========>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
 
 # proper candidates of tuning parameters
-lamseq <- seq(1.5e-6, 1e-2, length.out = 300)
+lamseq <- seq(1.5e-15, 1, length.out = 300)
 lambda.list <- list() # a list containing candidates of tuning parameters for each mode
 for (i in 1:K) {
   lambda.list[[i]] <- lamseq
 }
 
-lamseq.C <- seq(1.5e-6, 1e-2, length.out = 300)
+lamseq.C <- seq(1.5e-15, 1, length.out = 300)
 lambda.list.C <- list() # a list containing candidates of tuning parameters for each mode
 for (i in 1:K) {
   lambda.list.C[[i]] <- lamseq.C
@@ -112,13 +173,39 @@ for(itr in 1:RUNs){
   Sigma <- data[[2]]
   Omega <- data[[3]]
   
+  nOut <- ceiling(pctOut * n)
+  idxcontami <- sample(n, nOut)
+  contami <- rt(nOut*nvars, df=10)
+  dim(contami) <- c(dimen, nOut)
+  
+  contam.x <- x[]
+  for(i in seq_along(idxcontami)){
+    contam.x[, , idxcontami[i]] <- contami[, , i]
+  }
+  
+  contam.Tx <- NSEstimator2(contam.x, dimen)
+  
+  
+  idxcontami <- sample(n, nOut)
+  contami <- rt(nOut*nvars, df=10)
+  dim(contami) <- c(dimen, nOut)
+  
+  contam.vax <- vax[]
+  for(i in seq_along(idxcontami)){
+    contam.vax[, , idxcontami[i]] <- contami[, , i]
+  }
+  
+  contam.Tvax <- NSEstimator2(contam.vax, dimen)
+  
   Tx <- NSEstimator2(x, dimen)
   Tvax <- NSEstimator2(vax, dimen)
   
-  
-  fitx <- Separate.fit.correct(x, vax, lambda.list = lambda.list)
-  fitTx <- Separate.fit.correct(Tx, Tvax, lambda.list = lambda.list)
-  fitTx.C <- Separate.fit.correct(Tx, Tvax, lambda.list = lambda.list.C, Grho=Grho)
+  fitx <- Separate.fit.correct(contam.x, contam.vax, lambda.list = lambda.list)
+  fitTx <- Separate.fit.correct(contam.Tx, contam.Tvax, lambda.list = lambda.list)
+  fitTx.C <- Separate.fit.correct(contam.Tx, contam.Tvax, lambda.list = lambda.list.C, Grho=Grho)
+  # fitx <- Separate.fit.correct(contam.x, contam.vax, lambda.list = lambda.list, scale.vec = c(1, 0.2))
+  # fitTx <- Separate.fit.correct(contam.Tx, contam.Tvax, lambda.list = lambda.list, scale.vec = c(1, 0.2))
+  # fitTx.C <- Separate.fit.correct(contam.Tx, contam.Tvax, lambda.list = lambda.list.C, Grho=Grho, scale.vec = c(1, 0.2))
   
   
   
@@ -128,6 +215,8 @@ for(itr in 1:RUNs){
   error.max[itr, 1] <- outx$error.max
   tpr[itr, 1] <- outx$tpr
   tnr[itr, 1] <- outx$tnr
+  est.sigma[itr, 1] <- norm(fitx$Omegahat[[1]][[2]], type="F")
+  est.omega[itr, 1] <- norm(fitx$Omegahat[[1]][[1]], type="F")
   
   error.f.sigma[itr, 1] <- outx.sigma$error.f
   error.max.sigma[itr, 1] <- outx.sigma$error.max
@@ -141,6 +230,8 @@ for(itr in 1:RUNs){
   error.max.T[itr, 1] <- outTx$error.max
   tpr.T[itr, 1] <- outTx$tpr
   tnr.T[itr, 1] <- outTx$tnr
+  est.sigma.T[itr, 1] <- norm(fitTx$Omegahat[[1]][[2]], type="F")
+  est.omega.T[itr, 1] <- norm(fitTx$Omegahat[[1]][[1]], type="F")
   
   error.f.T.sigma[itr, 1] <- outTx.sigma$error.f
   error.max.T.sigma[itr, 1] <- outTx.sigma$error.max
@@ -153,6 +244,8 @@ for(itr in 1:RUNs){
   error.max.T.C[itr, 1] <- outTx.C$error.max
   tpr.T.C[itr, 1] <- outTx.C$tpr
   tnr.T.C[itr, 1] <- outTx.C$tnr
+  est.sigma.T.C[itr, 1] <- norm(fitTx.C$Omegahat[[1]][[2]], type="F")
+  est.omega.T.C[itr, 1] <- norm(fitTx.C$Omegahat[[1]][[1]], type="F")
   
   error.f.T.C.sigma[itr, 1] <- outTx.C.sigma$error.f
   error.max.T.C.sigma[itr, 1] <- outTx.C.sigma$error.max
@@ -169,8 +262,14 @@ cat("TNR:", colMeans(tnr), "SD:", sd(tnr), "\n")
 cat("Comparison for SIGMA::just sample, no transformation, no correction", "\n")
 cat("Range of lambda.best: ", sprintf("[%.10e, %.10e]\n", min(lambda.x), max(lambda.x)), "\n\n")
 
+
+cat("Comparison for SIGMA::just sample, no transformation, no correction", "\n")
 cat("Mean Forb. Diff.:", colMeans(error.f.sigma), "SD:", sd(error.f.sigma), "\n")
 cat("Mean Max. Error:", colMeans(error.max.sigma), "SD:", sd(error.max.sigma), "\n")
+cat("Mean Frob. Norm Estimated Sigma:", colMeans(est.sigma), "SD:", sd(est.sigma), "\n")
+cat("Frob. Norm True Sigma:", norm(Sigma[[1]], type="F"), "\n")
+cat("Mean Frob. Norm Estimated Omega:", colMeans(est.omega), "SD:", sd(est.omega), "\n")
+cat("Frob. Norm True Omega:", norm(Omega[[1]], type="F"), "\n")
 
 
 
@@ -190,7 +289,10 @@ cat("Range of lambda.best: ", sprintf("[%.10e, %.10e]\n", min(lambda.Tx), max(la
 cat("Comparison for SIGMA::with transformation, no correction", "\n")
 cat("Mean Forb. Diff.:", colMeans(error.f.T.sigma), "SD:", sd(error.f.T.sigma), "\n")
 cat("Mean Max. Error:", colMeans(error.max.T.sigma), "SD:", sd(error.max.T.sigma), "\n")
-
+cat("Mean Frob. Norm Estimated Sigma:", colMeans(est.sigma.T), "SD:", sd(est.sigma.T), "\n")
+cat("Frob. Norm True Sigma:", norm(Sigma[[1]], type="F"), "\n")
+cat("Mean Frob. Norm Estimated Omega:", colMeans(est.omega.T), "SD:", sd(est.omega.T), "\n")
+cat("Frob. Norm True Omega:", norm(Omega[[1]], type="F"), "\n")
 
 
 
@@ -209,7 +311,10 @@ cat("Range of lambda.best: ", sprintf("[%.10e, %.10e]\n", min(lambda.Tx.C), max(
 cat("Comparison for SIGMA::with transformation with correction", "\n")
 cat("Mean Forb. Diff.:", colMeans(error.f.T.C.sigma), "SD:", sd(error.f.T.C.sigma), "\n")
 cat("Mean Max. Error:", colMeans(error.max.T.C.sigma), "SD:", sd(error.max.T.C.sigma), "\n")
-
+cat("Mean Frob. Norm Estimated Sigma:", colMeans(est.sigma.T.C), "SD:", sd(est.sigma.T.C), "\n")
+cat("Frob. Norm True Sigma:", norm(Sigma[[1]], type="F"), "\n")
+cat("Mean Frob. Norm Estimated Omega:", colMeans(est.omega.T.C), "SD:", sd(est.omega.T.C), "\n")
+cat("Frob. Norm True Omega:", norm(Omega[[1]], type="F"), "\n")
 
 
 
