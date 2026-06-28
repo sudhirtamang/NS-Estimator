@@ -73,40 +73,40 @@ tnr <- array(0, dim = c(RUNs, d)) # true negative rate for each mode
 # RUNs <- 1
 d <- 1
 # d <- K
-contamina.lambda.x <- array(0, dim = c(RUNs, d))
-contamina.est.sigma <- array(0, dim = c(RUNs, d))
-contamina.est.omega <- array(0, dim = c(RUNs, d))
-contamina.error.f <- array(0, dim = c(RUNs, d)) # estimation error in Frobenius norm for each mode
-contamina.error.f.sigma <- array(0, dim = c(RUNs, d)) # estimation error in Frobenius norm for each mode
-contamina.error.max <- array(0, dim = c(RUNs, d)) # estimation error in Maximum norm for each mode
-contamina.error.max.sigma <- array(0, dim = c(RUNs, d)) # estimation error in Maximum norm for each mode
-contamina.tpr <- array(0, dim = c(RUNs, d)) # true positive rate for each mode
-contamina.tnr <- array(0, dim = c(RUNs, d)) # true negative rate for each mode
+contam.lambda.x <- array(0, dim = c(RUNs, d))
+contam.est.sigma <- array(0, dim = c(RUNs, d))
+contam.est.omega <- array(0, dim = c(RUNs, d))
+contam.error.f <- array(0, dim = c(RUNs, d)) # estimation error in Frobenius norm for each mode
+contam.error.f.sigma <- array(0, dim = c(RUNs, d)) # estimation error in Frobenius norm for each mode
+contam.error.max <- array(0, dim = c(RUNs, d)) # estimation error in Maximum norm for each mode
+contam.error.max.sigma <- array(0, dim = c(RUNs, d)) # estimation error in Maximum norm for each mode
+contam.tpr <- array(0, dim = c(RUNs, d)) # true positive rate for each mode
+contam.tnr <- array(0, dim = c(RUNs, d)) # true negative rate for each mode
 
 
 d <- 1
 # d <- K
-contamina.lambda.Tx <- array(0, dim = c(RUNs, d))
-contamina.est.sigma.T <- array(0, dim = c(RUNs, d))
-contamina.est.omega.T <- array(0, dim = c(RUNs, d))
-contamina.error.f.T <- array(0, dim = c(RUNs, d)) # averaged estimation error in Frobenius norm
-contamina.error.f.T.sigma <- array(0, dim = c(RUNs, d)) # averaged estimation error in Frobenius norm
-contamina.error.max.T <- array(0, dim = c(RUNs, d)) # averaged estimation error in Maximum norm
-contamina.error.max.T.sigma <- array(0, dim = c(RUNs, d)) # averaged estimation error in Maximum norm
-contamina.tpr.T <- array(0, dim = c(RUNs, d)) # averaged true positive rate
-contamina.tnr.T <- array(0, dim = c(RUNs, d)) # averaged true negative rate
+contam.lambda.Tx <- array(0, dim = c(RUNs, d))
+contam.est.sigma.T <- array(0, dim = c(RUNs, d))
+contam.est.omega.T <- array(0, dim = c(RUNs, d))
+contam.error.f.T <- array(0, dim = c(RUNs, d)) # averaged estimation error in Frobenius norm
+contam.error.f.T.sigma <- array(0, dim = c(RUNs, d)) # averaged estimation error in Frobenius norm
+contam.error.max.T <- array(0, dim = c(RUNs, d)) # averaged estimation error in Maximum norm
+contam.error.max.T.sigma <- array(0, dim = c(RUNs, d)) # averaged estimation error in Maximum norm
+contam.tpr.T <- array(0, dim = c(RUNs, d)) # averaged true positive rate
+contam.tnr.T <- array(0, dim = c(RUNs, d)) # averaged true negative rate
 
 d <- 1
 # d <- K
-contamina.lambda.Tx.C <- array(0, dim = c(RUNs, d))
-contamina.est.sigma.T.C <- array(0, dim = c(RUNs, d))
-contamina.est.omega.T.C <- array(0, dim = c(RUNs, d))
-contamina.error.f.T.C <- array(0, dim = c(RUNs, d)) # estimation error in Frobenius norm for each mode
-contamina.error.f.T.C.sigma <- array(0, dim = c(RUNs, d)) # estimation error in Frobenius norm for each mode
-contamina.error.max.T.C <- array(0, dim = c(RUNs, d)) # estimation error in Maximum norm for each mode
-contamina.error.max.T.C.sigma <- array(0, dim = c(RUNs, d)) # estimation error in Maximum norm for each mode
-contamina.tpr.T.C <- array(0, dim = c(RUNs, d)) # true positive rate for each mode
-contamina.tnr.T.C <- array(0, dim = c(RUNs, d)) # true negative rate for each mode
+contam.lambda.Tx.C <- array(0, dim = c(RUNs, d))
+contam.est.sigma.T.C <- array(0, dim = c(RUNs, d))
+contam.est.omega.T.C <- array(0, dim = c(RUNs, d))
+contam.error.f.T.C <- array(0, dim = c(RUNs, d)) # estimation error in Frobenius norm for each mode
+contam.error.f.T.C.sigma <- array(0, dim = c(RUNs, d)) # estimation error in Frobenius norm for each mode
+contam.error.max.T.C <- array(0, dim = c(RUNs, d)) # estimation error in Maximum norm for each mode
+contam.error.max.T.C.sigma <- array(0, dim = c(RUNs, d)) # estimation error in Maximum norm for each mode
+contam.tpr.T.C <- array(0, dim = c(RUNs, d)) # true positive rate for each mode
+contam.tnr.T.C <- array(0, dim = c(RUNs, d)) # true negative rate for each mode
 
 # d <- 1
 # av.error.f <- array(0, dim = c(RUNss, d)) # averaged estimation error in Frobenius norm
@@ -211,9 +211,10 @@ for(itr in 1:RUNs){
   Tx <- NSEstimator2(x, dimen)
   Tvax <- NSEstimator2(vax, dimen)
   
-  fitx <- Separate.fit.correct(contam.x, contam.vax, lambda.list = lambda.list)
-  fitTx <- Separate.fit.correct(contam.Tx, contam.Tvax, lambda.list = lambda.list)
-  fitTx.C <- Separate.fit.correct(contam.Tx, contam.Tvax, lambda.list = lambda.list.C, Grho=Grho)
+  fitx <- Separate.fit.correct(x, vax, lambda.list = lambda.list)
+  contam.fitx <- Separate.fit.correct(contam.x, contam.vax, lambda.list = lambda.list)
+  contam.fitTx <- Separate.fit.correct(contam.Tx, contam.Tvax, lambda.list = lambda.list)
+  contam.fitTx.C <- Separate.fit.correct(contam.Tx, contam.Tvax, lambda.list = lambda.list.C, Grho=Grho)
   # fitx <- Separate.fit.correct(contam.x, contam.vax, lambda.list = lambda.list, scale.vec = c(1, 0.2))
   # fitTx <- Separate.fit.correct(contam.Tx, contam.Tvax, lambda.list = lambda.list, scale.vec = c(1, 0.2))
   # fitTx.C <- Separate.fit.correct(contam.Tx, contam.Tvax, lambda.list = lambda.list.C, Grho=Grho, scale.vec = c(1, 0.2))
@@ -329,4 +330,4 @@ cat("Frob. Norm True Omega:", norm(Omega[[1]], type="F"), "\n")
 
 
 
-Here are XXXXXXXXXXXX
+
