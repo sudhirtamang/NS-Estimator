@@ -17,7 +17,7 @@ library(doParallel)
 library(furrr)
 
 
-source("Separate.fit.R")
+
 source("simulation.summary.R")
 source("Lfunctions.R")
 source("Separate.fit.correct.R")
@@ -27,8 +27,9 @@ source("Model.R")
 
 
 
-pctOut <- 0.1
-RUNs <- 100
+pctOut <- 0.3
+RUNs <- 10
+# RUNs <- 1
 n <- 50
 dimen <- c(45, 54)
 nvars <- prod(dimen)
@@ -163,13 +164,13 @@ contam.tnr.Tx.C <- array(0, dim = c(RUNs, d)) # true negative rate for each mode
 
 
 # proper candidates of tuning parameters
-lamseq <- seq(1.5e-15, 1, length.out = 300)
+lamseq <- seq(1.5e-6, 1, length.out = 300)
 lambda.list <- list() # a list containing candidates of tuning parameters for each mode
 for (i in 1:K) {
   lambda.list[[i]] <- lamseq
 }
 
-lamseq.C <- seq(1.5e-15, 1, length.out = 300)
+lamseq.C <- seq(1.5e-6, 1, length.out = 300)
 lambda.list.C <- list() # a list containing candidates of tuning parameters for each mode
 for (i in 1:K) {
   lambda.list.C[[i]] <- lamseq.C
@@ -256,8 +257,8 @@ for(itr in 1:RUNs){
   contam.error.max.Tx[itr, 1] <- contam.outTx$error.max
   contam.tpr.Tx[itr, 1] <- contam.outTx$tpr
   contam.tnr.Tx[itr, 1] <- contam.outTx$tnr
-  contam.est.sigma.T[itr, 1] <- norm(contam.fitTx$Omegahat[[1]][[2]], type="F")
-  contam.est.omega.T[itr, 1] <- norm(contam.fitTx$Omegahat[[1]][[1]], type="F")
+  contam.est.sigma.Tx[itr, 1] <- norm(contam.fitTx$Omegahat[[1]][[2]], type="F")
+  contam.est.omega.Tx[itr, 1] <- norm(contam.fitTx$Omegahat[[1]][[1]], type="F")
   
   contam.error.f.Tx.sigma[itr, 1] <- contam.outTx.sigma$error.f
   contam.error.max.Tx.sigma[itr, 1] <- contam.outTx.sigma$error.max
@@ -279,7 +280,7 @@ for(itr in 1:RUNs){
   contam.lambda.Tx.C[itr, 1] <- contam.fitTx.C$lambda[[1]]
 }
 
-cat("Comparison for OMEGA::just sample, no transformation, no correction", "\n")
+cat("Comparison for OMEGA::clean data, no transformation, no correction", "\n")
 cat("Mean Forb. Diff.:", colMeans(error.f), "SD:", sd(error.f), "\n")
 cat("Mean Max. Error:", colMeans(error.max), "SD:", sd(error.max), "\n")
 cat("TPR:", colMeans(tpr), "SD:", sd(tpr), "\n")
@@ -288,7 +289,7 @@ cat("Comparison for SIGMA::just sample, no transformation, no correction", "\n")
 cat("Range of lambda.best: ", sprintf("[%.10e, %.10e]\n", min(lambda.x), max(lambda.x)), "\n\n")
 
 
-cat("Comparison for SIGMA::just sample, no transformation, no correction", "\n")
+cat("Comparison for SIGMA::clean data, no transformation, no correction", "\n")
 cat("Mean Forb. Diff.:", colMeans(error.f.sigma), "SD:", sd(error.f.sigma), "\n")
 cat("Mean Max. Error:", colMeans(error.max.sigma), "SD:", sd(error.max.sigma), "\n")
 cat("Mean Frob. Norm Estimated Sigma:", colMeans(est.sigma), "SD:", sd(est.sigma), "\n")
@@ -301,7 +302,7 @@ cat("Frob. Norm True Omega:", norm(Omega[[1]], type="F"), "\n")
 cat("====================================>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", "\n")
 cat("====================================>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", "\n")
 cat("====================================>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", "\n")
-cat("Comparison for OMEGA::just sample, no transformation, no correction", "\n")
+cat("Comparison for OMEGA:: contaminated data, no transformation, no correction", "\n")
 cat("Mean Forb. Diff.:", colMeans(contam.error.f), "SD:", sd(contam.error.f), "\n")
 cat("Mean Max. Error:", colMeans(contam.error.max), "SD:", sd(contam.error.max), "\n")
 cat("TPR:", colMeans(contam.tpr), "SD:", sd(contam.tpr), "\n")
@@ -310,7 +311,7 @@ cat("Comparison for SIGMA::just sample, no transformation, no correction", "\n")
 cat("Range of lambda.best: ", sprintf("[%.10e, %.10e]\n", min(contam.lambda.x), max(contam.lambda.x)), "\n\n")
 
 
-cat("Comparison for SIGMA::just sample, no transformation, no correction", "\n")
+cat("Comparison for SIGMA:: contaminated data, no transformation, no correction", "\n")
 cat("Mean Forb. Diff.:", colMeans(contam.error.f.sigma), "SD:", sd(contam.error.f.sigma), "\n")
 cat("Mean Max. Error:", colMeans(contam.error.max.sigma), "SD:", sd(contam.error.max.sigma), "\n")
 cat("Mean Frob. Norm Estimated Sigma:", colMeans(contam.est.sigma), "SD:", sd(contam.est.sigma), "\n")
@@ -325,7 +326,7 @@ cat("====================================>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 cat("====================================>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", "\n")
 
 
-cat("Comparison for OMEGA::with transformation, no correction", "\n")
+cat("Comparison for OMEGA::Contaminated data with transformation, no correction", "\n")
 
 cat("Mean Forb. Diff.:", colMeans(contam.error.f.Tx), "SD:", sd(contam.error.f.Tx), "\n")
 cat("Mean Max. Error:", colMeans(contam.error.max.Tx), "SD:", sd(contam.error.max.Tx), "\n")
@@ -333,7 +334,7 @@ cat("TPR:", colMeans(contam.tpr.Tx), "SD:", sd(contam.tpr.Tx), "\n")
 cat("TNR:", colMeans(contam.tnr.Tx), "SD:", sd(contam.tnr.Tx), "\n")
 cat("Range of lambda.best: ", sprintf("[%.10e, %.10e]\n", min(contam.lambda.Tx), max(contam.lambda.Tx)), "\n\n")
 
-cat("Comparison for SIGMA::with transformation, no correction", "\n")
+cat("Comparison for SIGMA::Contaminated data with transformation, no correction", "\n")
 cat("Mean Forb. Diff.:", colMeans(contam.error.f.Tx.sigma), "SD:", sd(contam.error.f.Tx.sigma), "\n")
 cat("Mean Max. Error:", colMeans(contam.error.max.Tx.sigma), "SD:", sd(contam.error.max.Tx.sigma), "\n")
 cat("Mean Frob. Norm Estimated Sigma:", colMeans(contam.est.sigma.Tx), "SD:", sd(contam.est.sigma.Tx), "\n")
@@ -348,14 +349,14 @@ cat("====================================>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 cat("====================================>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", "\n")
 
 
-cat("Comparison for OMEGA::with transformation with correction", "\n")
+cat("Comparison for OMEGA::Contaminated data with transformation with correction", "\n")
 cat("Mean Forb. Diff.:", colMeans(contam.error.f.Tx.C), "SD:", sd(contam.error.f.Tx.C), "\n")
 cat("Mean Max. Error:", colMeans(contam.error.max.Tx.C), "SD:", sd(contam.error.max.Tx.C), "\n")
 cat("TPR:", colMeans(contam.tpr.Tx.C), "SD:", sd(contam.tpr.Tx.C), "\n")
 cat("TNR:", colMeans(contam.tnr.Tx.C), "SD:", sd(contam.tnr.Tx.C), "\n")
 cat("Range of lambda.best: ", sprintf("[%.10e, %.10e]\n", min(contam.lambda.Tx.C), max(contam.lambda.Tx.C)), "\n\n")
 
-cat("Comparison for SIGMA::with transformation with correction", "\n")
+cat("Comparison for SIGMA::Contaminated data with transformation with correction", "\n")
 cat("Mean Forb. Diff.:", colMeans(contam.error.f.Tx.C.sigma), "SD:", sd(contam.error.f.Tx.C.sigma), "\n")
 cat("Mean Max. Error:", colMeans(contam.error.max.Tx.C.sigma), "SD:", sd(contam.error.max.Tx.C.sigma), "\n")
 cat("Mean Frob. Norm Estimated Sigma:", colMeans(contam.est.sigma.Tx.C), "SD:", sd(contam.est.sigma.Tx.C), "\n")
