@@ -87,26 +87,26 @@ contam.tnr <- array(0, dim = c(RUNs, d)) # true negative rate for each mode
 d <- 1
 # d <- K
 contam.lambda.Tx <- array(0, dim = c(RUNs, d))
-contam.est.sigma.T <- array(0, dim = c(RUNs, d))
-contam.est.omega.T <- array(0, dim = c(RUNs, d))
-contam.error.f.T <- array(0, dim = c(RUNs, d)) # averaged estimation error in Frobenius norm
-contam.error.f.T.sigma <- array(0, dim = c(RUNs, d)) # averaged estimation error in Frobenius norm
-contam.error.max.T <- array(0, dim = c(RUNs, d)) # averaged estimation error in Maximum norm
-contam.error.max.T.sigma <- array(0, dim = c(RUNs, d)) # averaged estimation error in Maximum norm
-contam.tpr.T <- array(0, dim = c(RUNs, d)) # averaged true positive rate
-contam.tnr.T <- array(0, dim = c(RUNs, d)) # averaged true negative rate
+contam.est.sigma.Tx <- array(0, dim = c(RUNs, d))
+contam.est.omega.Tx <- array(0, dim = c(RUNs, d))
+contam.error.f.Tx <- array(0, dim = c(RUNs, d)) # averaged estimation error in Frobenius norm
+contam.error.f.Tx.sigma <- array(0, dim = c(RUNs, d)) # averaged estimation error in Frobenius norm
+contam.error.max.Tx <- array(0, dim = c(RUNs, d)) # averaged estimation error in Maximum norm
+contam.error.max.Tx.sigma <- array(0, dim = c(RUNs, d)) # averaged estimation error in Maximum norm
+contam.tpr.Tx <- array(0, dim = c(RUNs, d)) # averaged true positive rate
+contam.tnr.Tx <- array(0, dim = c(RUNs, d)) # averaged true negative rate
 
 d <- 1
 # d <- K
 contam.lambda.Tx.C <- array(0, dim = c(RUNs, d))
-contam.est.sigma.T.C <- array(0, dim = c(RUNs, d))
-contam.est.omega.T.C <- array(0, dim = c(RUNs, d))
-contam.error.f.T.C <- array(0, dim = c(RUNs, d)) # estimation error in Frobenius norm for each mode
-contam.error.f.T.C.sigma <- array(0, dim = c(RUNs, d)) # estimation error in Frobenius norm for each mode
-contam.error.max.T.C <- array(0, dim = c(RUNs, d)) # estimation error in Maximum norm for each mode
-contam.error.max.T.C.sigma <- array(0, dim = c(RUNs, d)) # estimation error in Maximum norm for each mode
-contam.tpr.T.C <- array(0, dim = c(RUNs, d)) # true positive rate for each mode
-contam.tnr.T.C <- array(0, dim = c(RUNs, d)) # true negative rate for each mode
+contam.est.sigma.Tx.C <- array(0, dim = c(RUNs, d))
+contam.est.omega.Tx.C <- array(0, dim = c(RUNs, d))
+contam.error.f.Tx.C <- array(0, dim = c(RUNs, d)) # estimation error in Frobenius norm for each mode
+contam.error.f.Tx.C.sigma <- array(0, dim = c(RUNs, d)) # estimation error in Frobenius norm for each mode
+contam.error.max.Tx.C <- array(0, dim = c(RUNs, d)) # estimation error in Maximum norm for each mode
+contam.error.max.Tx.C.sigma <- array(0, dim = c(RUNs, d)) # estimation error in Maximum norm for each mode
+contam.tpr.Tx.C <- array(0, dim = c(RUNs, d)) # true positive rate for each mode
+contam.tnr.Tx.C <- array(0, dim = c(RUNs, d)) # true negative rate for each mode
 
 # d <- 1
 # av.error.f <- array(0, dim = c(RUNss, d)) # averaged estimation error in Frobenius norm
@@ -235,36 +235,49 @@ for(itr in 1:RUNs){
   
   lambda.x[itr, 1] <- fitx$lambda[[1]]
   
+  contam.outx <- simulation.summary(list(contam.fitx$Omegahat[[1]][[1]]), list(Omega[[1]]), offdiag = FALSE)
+  contam.outx.sigma <- simulation.summary(list(contam.fitx$Omegahat[[1]][[2]]), list(Sigma[[1]]), offdiag = FALSE)
+  contam.error.f[itr, 1] <- contam.outx$error.f
+  contam.error.max[itr, 1] <- contam.outx$error.max
+  contam.tpr[itr, 1] <- contam.outx$tpr
+  contam.tnr[itr, 1] <- contam.outx$tnr
+  contam.est.sigma[itr, 1] <- norm(contam.fitx$Omegahat[[1]][[2]], type="F")
+  contam.est.omega[itr, 1] <- norm(contam.fitx$Omegahat[[1]][[1]], type="F")
   
-  outTx <- simulation.summary(list(fitTx$Omegahat[[1]][[1]]), list(Omega[[1]]), offdiag = FALSE)
-  outTx.sigma <- simulation.summary(list(fitTx$Omegahat[[1]][[2]]), list(Sigma[[1]]), offdiag = FALSE)
-  error.f.T[itr, 1] <- outTx$error.f
-  error.max.T[itr, 1] <- outTx$error.max
-  tpr.T[itr, 1] <- outTx$tpr
-  tnr.T[itr, 1] <- outTx$tnr
-  est.sigma.T[itr, 1] <- norm(fitTx$Omegahat[[1]][[2]], type="F")
-  est.omega.T[itr, 1] <- norm(fitTx$Omegahat[[1]][[1]], type="F")
+  contam.error.f.sigma[itr, 1] <- contam.outx.sigma$error.f
+  contam.error.max.sigma[itr, 1] <- contam.outx.sigma$error.max
   
-  error.f.T.sigma[itr, 1] <- outTx.sigma$error.f
-  error.max.T.sigma[itr, 1] <- outTx.sigma$error.max
+  contam.lambda.x[itr, 1] <- contam.fitx$lambda[[1]]
   
-  lambda.Tx[itr, 1] <- fitTx$lambda[[1]]
   
-  outTx.C <- simulation.summary(list(fitTx.C$Omegahat[[1]][[1]]), list(Omega[[1]]), offdiag = FALSE)
-  outTx.C.sigma <- simulation.summary(list(fitTx.C$Omegahat[[1]][[2]]), list(Sigma[[1]]), offdiag = FALSE)
-  error.f.T.C[itr, 1] <- outTx.C$error.f
-  error.max.T.C[itr, 1] <- outTx.C$error.max
-  tpr.T.C[itr, 1] <- outTx.C$tpr
-  tnr.T.C[itr, 1] <- outTx.C$tnr
-  est.sigma.T.C[itr, 1] <- norm(fitTx.C$Omegahat[[1]][[2]], type="F")
-  est.omega.T.C[itr, 1] <- norm(fitTx.C$Omegahat[[1]][[1]], type="F")
+  contam.outTx <- simulation.summary(list(contam.fitTx$Omegahat[[1]][[1]]), list(Omega[[1]]), offdiag = FALSE)
+  contam.outTx.sigma <- simulation.summary(list(contam.fitTx$Omegahat[[1]][[2]]), list(Sigma[[1]]), offdiag = FALSE)
+  contam.error.f.Tx[itr, 1] <- contam.outTx$error.f
+  contam.error.max.Tx[itr, 1] <- contam.outTx$error.max
+  contam.tpr.Tx[itr, 1] <- contam.outTx$tpr
+  contam.tnr.Tx[itr, 1] <- contam.outTx$tnr
+  contam.est.sigma.T[itr, 1] <- norm(contam.fitTx$Omegahat[[1]][[2]], type="F")
+  contam.est.omega.T[itr, 1] <- norm(contam.fitTx$Omegahat[[1]][[1]], type="F")
   
-  error.f.T.C.sigma[itr, 1] <- outTx.C.sigma$error.f
-  error.max.T.C.sigma[itr, 1] <- outTx.C.sigma$error.max
+  contam.error.f.Tx.sigma[itr, 1] <- contam.outTx.sigma$error.f
+  contam.error.max.Tx.sigma[itr, 1] <- contam.outTx.sigma$error.max
   
-  lambda.Tx.C[itr, 1] <- fitTx.C$lambda[[1]]
+  contam.lambda.Tx[itr, 1] <- contam.fitTx$lambda[[1]]
+  
+  contam.outTx.C <- simulation.summary(list(contam.fitTx.C$Omegahat[[1]][[1]]), list(Omega[[1]]), offdiag = FALSE)
+  contam.outTx.C.sigma <- simulation.summary(list(contam.fitTx.C$Omegahat[[1]][[2]]), list(Sigma[[1]]), offdiag = FALSE)
+  contam.error.f.Tx.C[itr, 1] <- contam.outTx.C$error.f
+  contam.error.max.Tx.C[itr, 1] <- contam.outTx.C$error.max
+  contam.tpr.Tx.C[itr, 1] <- contam.outTx.C$tpr
+  contam.tnr.Tx.C[itr, 1] <- contam.outTx.C$tnr
+  contam.est.sigma.Tx.C[itr, 1] <- norm(contam.fitTx.C$Omegahat[[1]][[2]], type="F")
+  contam.est.omega.Tx.C[itr, 1] <- norm(contam.fitTx.C$Omegahat[[1]][[1]], type="F")
+  
+  contam.error.f.Tx.C.sigma[itr, 1] <- contam.outTx.C.sigma$error.f
+  contam.error.max.Tx.C.sigma[itr, 1] <- contam.outTx.C.sigma$error.max
+  
+  contam.lambda.Tx.C[itr, 1] <- contam.fitTx.C$lambda[[1]]
 }
-
 
 cat("Comparison for OMEGA::just sample, no transformation, no correction", "\n")
 cat("Mean Forb. Diff.:", colMeans(error.f), "SD:", sd(error.f), "\n")
@@ -288,22 +301,44 @@ cat("Frob. Norm True Omega:", norm(Omega[[1]], type="F"), "\n")
 cat("====================================>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", "\n")
 cat("====================================>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", "\n")
 cat("====================================>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", "\n")
+cat("Comparison for OMEGA::just sample, no transformation, no correction", "\n")
+cat("Mean Forb. Diff.:", colMeans(contam.error.f), "SD:", sd(contam.error.f), "\n")
+cat("Mean Max. Error:", colMeans(contam.error.max), "SD:", sd(contam.error.max), "\n")
+cat("TPR:", colMeans(contam.tpr), "SD:", sd(contam.tpr), "\n")
+cat("TNR:", colMeans(contam.tnr), "SD:", sd(contam.tnr), "\n")
+cat("Comparison for SIGMA::just sample, no transformation, no correction", "\n")
+cat("Range of lambda.best: ", sprintf("[%.10e, %.10e]\n", min(contam.lambda.x), max(contam.lambda.x)), "\n\n")
+
+
+cat("Comparison for SIGMA::just sample, no transformation, no correction", "\n")
+cat("Mean Forb. Diff.:", colMeans(contam.error.f.sigma), "SD:", sd(contam.error.f.sigma), "\n")
+cat("Mean Max. Error:", colMeans(contam.error.max.sigma), "SD:", sd(contam.error.max.sigma), "\n")
+cat("Mean Frob. Norm Estimated Sigma:", colMeans(contam.est.sigma), "SD:", sd(contam.est.sigma), "\n")
+cat("Frob. Norm True Sigma:", norm(Sigma[[1]], type="F"), "\n")
+cat("Mean Frob. Norm Estimated Omega:", colMeans(contam.est.omega), "SD:", sd(contam.est.omega), "\n")
+cat("Frob. Norm True Omega:", norm(Omega[[1]], type="F"), "\n")
+
+
+
+cat("====================================>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", "\n")
+cat("====================================>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", "\n")
+cat("====================================>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", "\n")
 
 
 cat("Comparison for OMEGA::with transformation, no correction", "\n")
 
-cat("Mean Forb. Diff.:", colMeans(error.f.T), "SD:", sd(error.f.T), "\n")
-cat("Mean Max. Error:", colMeans(error.max.T), "SD:", sd(error.max.T), "\n")
-cat("TPR:", colMeans(tpr.T), "SD:", sd(tpr.T), "\n")
-cat("TNR:", colMeans(tnr.T), "SD:", sd(tnr.T), "\n")
-cat("Range of lambda.best: ", sprintf("[%.10e, %.10e]\n", min(lambda.Tx), max(lambda.Tx)), "\n\n")
+cat("Mean Forb. Diff.:", colMeans(contam.error.f.Tx), "SD:", sd(contam.error.f.Tx), "\n")
+cat("Mean Max. Error:", colMeans(contam.error.max.Tx), "SD:", sd(contam.error.max.Tx), "\n")
+cat("TPR:", colMeans(contam.tpr.Tx), "SD:", sd(contam.tpr.Tx), "\n")
+cat("TNR:", colMeans(contam.tnr.Tx), "SD:", sd(contam.tnr.Tx), "\n")
+cat("Range of lambda.best: ", sprintf("[%.10e, %.10e]\n", min(contam.lambda.Tx), max(contam.lambda.Tx)), "\n\n")
 
 cat("Comparison for SIGMA::with transformation, no correction", "\n")
-cat("Mean Forb. Diff.:", colMeans(error.f.T.sigma), "SD:", sd(error.f.T.sigma), "\n")
-cat("Mean Max. Error:", colMeans(error.max.T.sigma), "SD:", sd(error.max.T.sigma), "\n")
-cat("Mean Frob. Norm Estimated Sigma:", colMeans(est.sigma.T), "SD:", sd(est.sigma.T), "\n")
+cat("Mean Forb. Diff.:", colMeans(contam.error.f.Tx.sigma), "SD:", sd(contam.error.f.Tx.sigma), "\n")
+cat("Mean Max. Error:", colMeans(contam.error.max.Tx.sigma), "SD:", sd(contam.error.max.Tx.sigma), "\n")
+cat("Mean Frob. Norm Estimated Sigma:", colMeans(contam.est.sigma.Tx), "SD:", sd(contam.est.sigma.Tx), "\n")
 cat("Frob. Norm True Sigma:", norm(Sigma[[1]], type="F"), "\n")
-cat("Mean Frob. Norm Estimated Omega:", colMeans(est.omega.T), "SD:", sd(est.omega.T), "\n")
+cat("Mean Frob. Norm Estimated Omega:", colMeans(contam.est.omega.Tx), "SD:", sd(contam.est.omega.Tx), "\n")
 cat("Frob. Norm True Omega:", norm(Omega[[1]], type="F"), "\n")
 
 
@@ -314,18 +349,18 @@ cat("====================================>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 
 cat("Comparison for OMEGA::with transformation with correction", "\n")
-cat("Mean Forb. Diff.:", colMeans(error.f.T.C), "SD:", sd(error.f.T.C), "\n")
-cat("Mean Max. Error:", colMeans(error.max.T.C), "SD:", sd(error.max.T.C), "\n")
-cat("TPR:", colMeans(tpr.T.C), "SD:", sd(tpr.T.C), "\n")
-cat("TNR:", colMeans(tnr.T.C), "SD:", sd(tnr.T.C), "\n")
-cat("Range of lambda.best: ", sprintf("[%.10e, %.10e]\n", min(lambda.Tx.C), max(lambda.Tx.C)), "\n\n")
+cat("Mean Forb. Diff.:", colMeans(contam.error.f.Tx.C), "SD:", sd(contam.error.f.Tx.C), "\n")
+cat("Mean Max. Error:", colMeans(contam.error.max.Tx.C), "SD:", sd(contam.error.max.Tx.C), "\n")
+cat("TPR:", colMeans(contam.tpr.Tx.C), "SD:", sd(contam.tpr.Tx.C), "\n")
+cat("TNR:", colMeans(contam.tnr.Tx.C), "SD:", sd(contam.tnr.Tx.C), "\n")
+cat("Range of lambda.best: ", sprintf("[%.10e, %.10e]\n", min(contam.lambda.Tx.C), max(contam.lambda.Tx.C)), "\n\n")
 
 cat("Comparison for SIGMA::with transformation with correction", "\n")
-cat("Mean Forb. Diff.:", colMeans(error.f.T.C.sigma), "SD:", sd(error.f.T.C.sigma), "\n")
-cat("Mean Max. Error:", colMeans(error.max.T.C.sigma), "SD:", sd(error.max.T.C.sigma), "\n")
-cat("Mean Frob. Norm Estimated Sigma:", colMeans(est.sigma.T.C), "SD:", sd(est.sigma.T.C), "\n")
+cat("Mean Forb. Diff.:", colMeans(contam.error.f.Tx.C.sigma), "SD:", sd(contam.error.f.Tx.C.sigma), "\n")
+cat("Mean Max. Error:", colMeans(contam.error.max.Tx.C.sigma), "SD:", sd(contam.error.max.Tx.C.sigma), "\n")
+cat("Mean Frob. Norm Estimated Sigma:", colMeans(contam.est.sigma.Tx.C), "SD:", sd(contam.est.sigma.Tx.C), "\n")
 cat("Frob. Norm True Sigma:", norm(Sigma[[1]], type="F"), "\n")
-cat("Mean Frob. Norm Estimated Omega:", colMeans(est.omega.T.C), "SD:", sd(est.omega.T.C), "\n")
+cat("Mean Frob. Norm Estimated Omega:", colMeans(contam.est.omega.Tx.C), "SD:", sd(contam.est.omega.Tx.C), "\n")
 cat("Frob. Norm True Omega:", norm(Omega[[1]], type="F"), "\n")
 
 
