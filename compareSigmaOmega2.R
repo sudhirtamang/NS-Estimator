@@ -58,8 +58,6 @@ Grho <- future_map_dbl(RHOs, func2, B = B, func1 = func1, n = 50, .options = fur
 plan(sequential)
 
 
-
-# RUNs <- 1
 d <- 1
 # d <- K
 lambda.x <- array(0, dim = c(RUNs, d))
@@ -72,30 +70,43 @@ error.max.sigma <- array(0, dim = c(RUNs, d)) # estimation error in Maximum norm
 tpr <- array(0, dim = c(RUNs, d)) # true positive rate for each mode
 tnr <- array(0, dim = c(RUNs, d)) # true negative rate for each mode
 
+# RUNs <- 1
+d <- 1
+# d <- K
+contamina.lambda.x <- array(0, dim = c(RUNs, d))
+contamina.est.sigma <- array(0, dim = c(RUNs, d))
+contamina.est.omega <- array(0, dim = c(RUNs, d))
+contamina.error.f <- array(0, dim = c(RUNs, d)) # estimation error in Frobenius norm for each mode
+contamina.error.f.sigma <- array(0, dim = c(RUNs, d)) # estimation error in Frobenius norm for each mode
+contamina.error.max <- array(0, dim = c(RUNs, d)) # estimation error in Maximum norm for each mode
+contamina.error.max.sigma <- array(0, dim = c(RUNs, d)) # estimation error in Maximum norm for each mode
+contamina.tpr <- array(0, dim = c(RUNs, d)) # true positive rate for each mode
+contamina.tnr <- array(0, dim = c(RUNs, d)) # true negative rate for each mode
+
 
 d <- 1
 # d <- K
-lambda.Tx <- array(0, dim = c(RUNs, d))
-est.sigma.T <- array(0, dim = c(RUNs, d))
-est.omega.T <- array(0, dim = c(RUNs, d))
-error.f.T <- array(0, dim = c(RUNs, d)) # averaged estimation error in Frobenius norm
-error.f.T.sigma <- array(0, dim = c(RUNs, d)) # averaged estimation error in Frobenius norm
-error.max.T <- array(0, dim = c(RUNs, d)) # averaged estimation error in Maximum norm
-error.max.T.sigma <- array(0, dim = c(RUNs, d)) # averaged estimation error in Maximum norm
-tpr.T <- array(0, dim = c(RUNs, d)) # averaged true positive rate
-tnr.T <- array(0, dim = c(RUNs, d)) # averaged true negative rate
+contamina.lambda.Tx <- array(0, dim = c(RUNs, d))
+contamina.est.sigma.T <- array(0, dim = c(RUNs, d))
+contamina.est.omega.T <- array(0, dim = c(RUNs, d))
+contamina.error.f.T <- array(0, dim = c(RUNs, d)) # averaged estimation error in Frobenius norm
+contamina.error.f.T.sigma <- array(0, dim = c(RUNs, d)) # averaged estimation error in Frobenius norm
+contamina.error.max.T <- array(0, dim = c(RUNs, d)) # averaged estimation error in Maximum norm
+contamina.error.max.T.sigma <- array(0, dim = c(RUNs, d)) # averaged estimation error in Maximum norm
+contamina.tpr.T <- array(0, dim = c(RUNs, d)) # averaged true positive rate
+contamina.tnr.T <- array(0, dim = c(RUNs, d)) # averaged true negative rate
 
 d <- 1
 # d <- K
-lambda.Tx.C <- array(0, dim = c(RUNs, d))
-est.sigma.T.C <- array(0, dim = c(RUNs, d))
-est.omega.T.C <- array(0, dim = c(RUNs, d))
-error.f.T.C <- array(0, dim = c(RUNs, d)) # estimation error in Frobenius norm for each mode
-error.f.T.C.sigma <- array(0, dim = c(RUNs, d)) # estimation error in Frobenius norm for each mode
-error.max.T.C <- array(0, dim = c(RUNs, d)) # estimation error in Maximum norm for each mode
-error.max.T.C.sigma <- array(0, dim = c(RUNs, d)) # estimation error in Maximum norm for each mode
-tpr.T.C <- array(0, dim = c(RUNs, d)) # true positive rate for each mode
-tnr.T.C <- array(0, dim = c(RUNs, d)) # true negative rate for each mode
+contamina.lambda.Tx.C <- array(0, dim = c(RUNs, d))
+contamina.est.sigma.T.C <- array(0, dim = c(RUNs, d))
+contamina.est.omega.T.C <- array(0, dim = c(RUNs, d))
+contamina.error.f.T.C <- array(0, dim = c(RUNs, d)) # estimation error in Frobenius norm for each mode
+contamina.error.f.T.C.sigma <- array(0, dim = c(RUNs, d)) # estimation error in Frobenius norm for each mode
+contamina.error.max.T.C <- array(0, dim = c(RUNs, d)) # estimation error in Maximum norm for each mode
+contamina.error.max.T.C.sigma <- array(0, dim = c(RUNs, d)) # estimation error in Maximum norm for each mode
+contamina.tpr.T.C <- array(0, dim = c(RUNs, d)) # true positive rate for each mode
+contamina.tnr.T.C <- array(0, dim = c(RUNs, d)) # true negative rate for each mode
 
 # d <- 1
 # av.error.f <- array(0, dim = c(RUNss, d)) # averaged estimation error in Frobenius norm
