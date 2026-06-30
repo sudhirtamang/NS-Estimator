@@ -27,11 +27,12 @@ source("Model.R")
 
 
 
-pctOut <- 0.3
-RUNs <- 10
+pctOut <- 0.5
+RUNs <- 100
 # RUNs <- 1
 n <- 50
 dimen <- c(45, 54)
+# dimen <- c(30, 36, 30)
 nvars <- prod(dimen)
 # dimen <- c(110, 4)
 
@@ -187,26 +188,30 @@ for(itr in 1:RUNs){
   
   nOut <- ceiling(pctOut * n)
   idxcontami <- sample(n, nOut)
-  contami <- rt(nOut*nvars, df=10)
+  contami <- rt(nOut*nvars, df=6)
   dim(contami) <- c(dimen, nOut)
   
   contam.x <- x[]
   for(i in seq_along(idxcontami)){
+    # contam.x[, , , idxcontami[i]] <- contami[, , , i]
     contam.x[, , idxcontami[i]] <- contami[, , i]
   }
   
+  # contam.Tx <- NSEstimator2(contam.x, dimen)
   contam.Tx <- NSEstimator2(contam.x, dimen)
   
   
   idxcontami <- sample(n, nOut)
-  contami <- rt(nOut*nvars, df=10)
+  contami <- rt(nOut*nvars, df=6)
   dim(contami) <- c(dimen, nOut)
   
   contam.vax <- vax[]
   for(i in seq_along(idxcontami)){
+    # contam.vax[, , , idxcontami[i]] <- contami[, , , i]
     contam.vax[, , idxcontami[i]] <- contami[, , i]
   }
   
+  # contam.Tvax <- NSEstimator2(contam.vax, dimen)
   contam.Tvax <- NSEstimator2(contam.vax, dimen)
   
   Tx <- NSEstimator2(x, dimen)
@@ -236,6 +241,8 @@ for(itr in 1:RUNs){
   
   lambda.x[itr, 1] <- fitx$lambda[[1]]
   
+  
+  
   contam.outx <- simulation.summary(list(contam.fitx$Omegahat[[1]][[1]]), list(Omega[[1]]), offdiag = FALSE)
   contam.outx.sigma <- simulation.summary(list(contam.fitx$Omegahat[[1]][[2]]), list(Sigma[[1]]), offdiag = FALSE)
   contam.error.f[itr, 1] <- contam.outx$error.f
@@ -251,6 +258,9 @@ for(itr in 1:RUNs){
   contam.lambda.x[itr, 1] <- contam.fitx$lambda[[1]]
   
   
+  
+  
+  
   contam.outTx <- simulation.summary(list(contam.fitTx$Omegahat[[1]][[1]]), list(Omega[[1]]), offdiag = FALSE)
   contam.outTx.sigma <- simulation.summary(list(contam.fitTx$Omegahat[[1]][[2]]), list(Sigma[[1]]), offdiag = FALSE)
   contam.error.f.Tx[itr, 1] <- contam.outTx$error.f
@@ -264,6 +274,9 @@ for(itr in 1:RUNs){
   contam.error.max.Tx.sigma[itr, 1] <- contam.outTx.sigma$error.max
   
   contam.lambda.Tx[itr, 1] <- contam.fitTx$lambda[[1]]
+  
+  
+  
   
   contam.outTx.C <- simulation.summary(list(contam.fitTx.C$Omegahat[[1]][[1]]), list(Omega[[1]]), offdiag = FALSE)
   contam.outTx.C.sigma <- simulation.summary(list(contam.fitTx.C$Omegahat[[1]][[2]]), list(Sigma[[1]]), offdiag = FALSE)
