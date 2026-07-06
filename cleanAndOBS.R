@@ -18,44 +18,64 @@ library(doParallel)
 library(furrr)
 
 
-
 source("simulation.summary.R")
 source("Lfunctions.R")
-source("Separate.fit.correct.R")
 source("Model.R")
 
 
-
-# RUNs <- 100
-RUNs <- 3
+RUNs <- 1
 n <- 50
 dimen <- c(45, 54)
-# dimen <- c(30, 36, 30)
-nvars <- prod(dimen)
-# dimen <- c(110, 4)
-
-K <- length(dimen)
-tensor.order <- length(dimen)
-
-
-d <- 1
-
-diff.f.sigma <- array(0, dim = c(RUNs, d)) # estimation error in Frobenius norm for each mode
-diff.f.omega <- array(0, dim = c(RUNs, d)) # estimation error in Frobenius norm for each mode
-diff.f.sigma.max <- array(0, dim = c(RUNs, d)) # estimation error in Frobenius norm for each mode
-diff.f.omega.max <- array(0, dim = c(RUNs, d)) # estimation error in Frobenius norm for each mode
 
 
 
+data <- Model(50, 123456, dimen)
+x <- data[[1]]$x
+vax <- data[[1]]$vax
+Sigma <- data[[2]]
+Omega <- data[[3]]
 
-for(itr in 1:RUNs){
-  print(itr)
-  data <- Model(n, itr * 123456, dimen)
-  x <- data[[1]]$x
-  vax <- data[[1]]$vax
-  Sigma <- data[[2]]
-  Omega <- data[[3]]
-}
+
+pct <- 0.5
+Sigma_obs <- (1 - pct)*Sigma[[1]] + pct*diag(dimen[[1]])
+Omega_obs <- solve(Sigma_obs)
+
+
+# PCTs <- seq(0, 1, 0.1)
+# NORMdiff <- vector("double", length=length(contaminations))
+# NORMmax <- vector("double", length=length(contaminations))
+# for(i in seq_along(contaminations)){
+#   Sigma_obs <- (1 - PCTs[[i]])*Sigma[[1]] + PCTs[[i]]*diag(dimen[[1]])
+#   NORMdiff[[i]] <- norm(Sigma_obs - Sigma[[1]], type="F")
+#   NORMmax[[i]] <- norm(Sigma_obs - Sigma[[1]], type="M")
+# }
+# 
+# plot(NORMdiff)
+# points(NORMmax)
+
+
+
+cat("for 50% Contamination", "\n")
+
+cat("Frob. norm of Clean Sigma:", norm(Sigma[[1]], type="F"), "\n")
+cat("Norm Max. of Clean Sigma:", norm(Sigma[[1]], type="M"), "\n")
+cat("Frob. norm of Contaminated Sigma:", norm(Sigma_obs, type="F"), "\n")
+cat("Norm Max. of Contaminated Sigma:", norm(Sigma_obs, type="M"), "\n")
+
+cat("\n\n")
+
+cat("Frob. norm of Clean Precision Matrix:", norm(Omega[[1]], type="F"), "\n")
+cat("Norm Max. of Clean Precision Matrix:", norm(Omega[[1]], type="M"), "\n")
+cat("Frob. norm of Contaminated Precision Matrix:", norm(Omega_obs, type="F"), "\n")
+cat("Norm Max. of Contaminated Precision Matrix:", norm(Omega_obs, type="M"), "\n")
+
+cat("\n\n")
+
+cat("Frob. norm diff between Clean Sigma and Contaminated Sigma:", norm(Sigma[[1]] - Sigma_obs, type="F"), "\n")
+cat("Norn Max. of diff between Clean Sigma and Contaminated Sigma:", norm(Sigma[[1]] - Sigma_obs, type="M"), "\n")
+cat("Frob. norm diff between Clean Precision Matrix and Contaminated Precision Matrix:", norm(Omega[[1]] - Omega_obs, type="F"), "\n")
+cat("Norn Max. of diff between Clean Precision Matrix and Contaminated Precision Matrix:", norm(Omega[[1]] - Omega_obs, type="M"), "\n")
+
 
 
 
