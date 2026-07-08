@@ -138,7 +138,6 @@ Separate.fit.correct = function(x, val = NULL, est.mode = NULL, lambda.vec = NUL
       S.mat <- as.matrix(Matrix::nearPD(S.mat)$mat)
       
       if(!is.null(Grho) & k == 1){
-        RHOs <- seq(-1, 1, 0.01)
         for(i in 1:dimen[[1]]){
           for(j in 1:dimen[[1]]){
             tmp1 <- abs(testS.mat[i, j] - Grho)
