@@ -15,8 +15,7 @@ library(expm)
 library(rTensor)
 library(doParallel)
 
-source("Separate.fit.R") 
-source("cv.Separate.R") 
+source("Separate.fit.correct.R") 
 source("simulation.summary.R") 
 source("Model7.R")
 
@@ -56,6 +55,17 @@ tpr <- array(0, dim = c(Run, d)) # true positive rate for each mode
 tnr <- array(0, dim = c(Run, d)) # true negative rate for each mode
 
 
+d <- 1
+av.error.f.sigma <- array(0, dim = c(Run, d)) # averaged estimation error in Frobenius norm
+av.error.max.sigma <- array(0, dim = c(Run, d)) # averaged estimation error in Maximum norm
+
+
+d <- 3
+error.f.sigma <- array(0, dim = c(Run, d)) # estimation error in Frobenius norm for each mode
+error.max.sigma <- array(0, dim = c(Run, d)) # estimation error in Maximum norm for each mode
+
+
+
 for (run in 1:Run) { 
   print(run)
   # Generate training set and validation set
@@ -71,7 +81,7 @@ for (run in 1:Run) {
   }
   
   # Model fitting
-  fit <- Separate.fit(x, vax, lambda.list = lambda.list)
+  fit <- Separate.fit.correct(x, vax, lambda.list = lambda.list)
   
   ## If there is no validation set, we can use cv.Separate to tune lambda via cross-validation
   # fit <- cv.Separate(x, lambda.list=lambda.list)
@@ -79,7 +89,7 @@ for (run in 1:Run) {
   # fit <- Separate.fit(x, lambda.vec = lambda.vec)
   
   # Simulation summary of estimation errors, TPR and TNR
-  out <- simulation.summary(fit$Omegahat, Omega, offdiag = FALSE)
+  out <- simulation.summary(, Omega, offdiag = FALSE)
   av.error.f[run] <- out$av.error.f
   av.error.max[run] <- out$av.error.max
   av.tpr[run] <- out$av.tpr
@@ -89,6 +99,16 @@ for (run in 1:Run) {
   error.max[run, ] <- out$error.max
   tpr[run, ] <- out$tpr
   tnr[run, ] <- out$tnr
+  
+  
+  out <- simulation.summary(map(fit$Omegahat, \(x) x[[2]]), Sigma, offdiag = FALSE)
+  av.error.f.sigma[run] <- out$av.error.f
+  av.error.max.sigma[run] <- out$av.error.max
+
+  
+  error.f.sigma[run, ] <- out$error.f
+  error.max.sigma[run, ] <- out$error.max
+
   
 }
 
