@@ -27,10 +27,10 @@ source("Model.R")
 
 
 
-pctOut <- 0.5
+pctOut <- 0.35
 RUNs <- 100
-# RUNs <- 1
-n <- 50
+# RUNs <- 2
+n <- 300
 dimen <- c(45, 54)
 # dimen <- c(30, 36, 30)
 nvars <- prod(dimen)
