@@ -17,7 +17,7 @@ library(doParallel)
 library(furrr)
 
 
-source("Separate.fit.R")
+
 source("simulation.summary.R")
 source("Lfunctions.R")
 source("Separate.fit.correct.R")
@@ -29,8 +29,8 @@ source("Model.R")
 
 pctOut <- 0.1
 RUNs <- 100
-n <- 50
-dimen <- c(45, 54)
+n <- 5000
+dimen <- c(45, 2)
 nvars <- prod(dimen)
 # dimen <- c(110, 4)
 

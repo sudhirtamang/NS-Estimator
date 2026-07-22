@@ -30,8 +30,8 @@ source("Model.R")
 pctOut <- 0.35
 RUNs <- 100
 # RUNs <- 2
-n <- 300
-dimen <- c(45, 54)
+n <- 50
+dimen <- c(45, 2)
 # dimen <- c(30, 36, 30)
 nvars <- prod(dimen)
 # dimen <- c(110, 4)
@@ -165,7 +165,7 @@ contam.tnr.Tx.C <- array(0, dim = c(RUNs, d)) # true negative rate for each mode
 
 
 # proper candidates of tuning parameters
-lamseq <- seq(1.5e-6, 1, length.out = 300)
+lamseq <- seq(1.5e-3, 1.5e-1, length.out = 300)
 lambda.list <- list() # a list containing candidates of tuning parameters for each mode
 for (i in 1:K) {
   lambda.list[[i]] <- lamseq
@@ -177,6 +177,13 @@ for (i in 1:K) {
   lambda.list.C[[i]] <- lamseq.C
 }
 
+
+set.seed(1234)
+all.values <- sample(RUNs, 8)
+x.values <- sort(all.values[1:2])
+contam.x.values <- sort(all.values[3:4])
+contam.Tx.values <- sort(all.values[5:6])
+contam.Tx.values.C <- sort(all.values[7:8])
 for(itr in 1:RUNs){
   
   print(itr)
@@ -197,8 +204,8 @@ for(itr in 1:RUNs){
     contam.x[, , idxcontami[i]] <- contami[, , i]
   }
   
-  # contam.Tx <- NSEstimator2(contam.x, dimen)
   contam.Tx <- NSEstimator2(contam.x, dimen)
+  # contam.Tx <- NSEstimator(contam.x, dimen)
   
   
   idxcontami <- sample(n, nOut)
@@ -211,15 +218,17 @@ for(itr in 1:RUNs){
     contam.vax[, , idxcontami[i]] <- contami[, , i]
   }
   
-  # contam.Tvax <- NSEstimator2(contam.vax, dimen)
   contam.Tvax <- NSEstimator2(contam.vax, dimen)
+  # contam.Tvax <- NSEstimator(contam.vax, dimen)
   
+  # Tx <- NSEstimator(x, dimen)
+  # Tvax <- NSEstimator(vax, dimen)
   Tx <- NSEstimator2(x, dimen)
   Tvax <- NSEstimator2(vax, dimen)
   
   fitx <- Separate.fit.correct(x, vax, lambda.list = lambda.list)
-  contam.fitx <- Separate.fit.correct(contam.x, contam.vax, lambda.list = lambda.list)
-  contam.fitTx <- Separate.fit.correct(contam.Tx, contam.Tvax, lambda.list = lambda.list)
+  contam.fitx <- Separate.fit.correct(contam.x, contam.vax, lambda.list = lambda.list.C)
+  contam.fitTx <- Separate.fit.correct(contam.Tx, contam.Tvax, lambda.list = lambda.list.C)
   contam.fitTx.C <- Separate.fit.correct(contam.Tx, contam.Tvax, lambda.list = lambda.list.C, Grho=Grho)
   # fitx <- Separate.fit.correct(contam.x, contam.vax, lambda.list = lambda.list, scale.vec = c(1, 0.2))
   # fitTx <- Separate.fit.correct(contam.Tx, contam.Tvax, lambda.list = lambda.list, scale.vec = c(1, 0.2))
