@@ -162,8 +162,10 @@ Separate.fit.correct.plot = function(x, val = NULL, est.mode = NULL, lambda.vec 
           stop(paste("Negative infinite value! Please choose a larger scale for mode", mode_index))
         }
       }
-      p
-      ind = which.max(loglik2)
+      if(mode_index == 1){
+        plot(lamk, loglik2, main=main, xlab=xlab, ylab=ylab)
+        ind = which.max(loglik2)
+      }
       lam.best[mode_index] = lamk[ind] # get the optimal lambda that maximizes the log-likelihood
       loglik[[mode_index]] = loglik2
     }
