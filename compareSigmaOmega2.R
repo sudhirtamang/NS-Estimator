@@ -21,6 +21,7 @@ library(furrr)
 source("simulation.summary.R")
 source("Lfunctions.R")
 source("Separate.fit.correct.R")
+source("Separate.fit.correct.plot.R")
 source("Model.R")
 
 
@@ -184,6 +185,9 @@ x.values <- sort(all.values[1:2])
 contam.x.values <- sort(all.values[3:4])
 contam.Tx.values <- sort(all.values[5:6])
 contam.Tx.values.C <- sort(all.values[7:8])
+xlab <- "Tuning parameter"
+ylab <- "Log-likelihood"
+
 for(itr in 1:RUNs){
   
   print(itr)
@@ -225,11 +229,33 @@ for(itr in 1:RUNs){
   # Tvax <- NSEstimator(vax, dimen)
   Tx <- NSEstimator2(x, dimen)
   Tvax <- NSEstimator2(vax, dimen)
+  if(itr %in% x.values){
+    main <- paste0("Clean data, no transformation, no correction at ", itr, " Iteration")
+    fitx <- Separate.fit.correct.plot(x, vax, lambda.list = lambda.list, main=main, xlab=xlab, ylab=ylab)
+  } else {
+    fitx <- Separate.fit.correct(x, vax, lambda.list = lambda.list)
+  }
+  if(itr %in% contam.x.values){
+    main <- paste0("Contaminated data, no transformation, no correction at ", itr, " Iteration")
+    contam.fitx <- Separate.fit.correct.plot(contam.x, contam.vax, lambda.list = lambda.list, main=main, xlab=xlab, ylab=ylab)
+  } else {
+    contam.fitx <- Separate.fit.correct(contam.x, contam.vax, lambda.list = lambda.list.C)
+  }
+  if(itr %in% contam.Tx.values){
+    main <- paste0("Contaminated data, with transformation, no correction at ", itr, " Iteration")
+    contam.fitTx <- Separate.fit.correct.plot(contam.Tx, contam.Tvax, lambda.list = lambda.list, main=main, xlab=xlab, ylab=ylab)
+  } else {
+    contam.fitTx <- Separate.fit.correct(contam.Tx, contam.Tvax, lambda.list = lambda.list.C)
+  }
+  if(itr %in% contam.Tx.values.C){
+    main <- paste0("Contaminated data, with transformation, with correction at ", itr, " Iteration")
+    contam.fitTx.C <- Separate.fit.correct.plot(contam.Tx, contam.Tvax, lambda.list = lambda.list, main=main, xlab=xlab, ylab=ylab)
+  } else {
+    contam.fitTx.C <- Separate.fit.correct(contam.Tx, contam.Tvax, lambda.list = lambda.list.C, Grho=Grho)
+  }
   
-  fitx <- Separate.fit.correct(x, vax, lambda.list = lambda.list)
-  contam.fitx <- Separate.fit.correct(contam.x, contam.vax, lambda.list = lambda.list.C)
-  contam.fitTx <- Separate.fit.correct(contam.Tx, contam.Tvax, lambda.list = lambda.list.C)
-  contam.fitTx.C <- Separate.fit.correct(contam.Tx, contam.Tvax, lambda.list = lambda.list.C, Grho=Grho)
+  
+  
   # fitx <- Separate.fit.correct(contam.x, contam.vax, lambda.list = lambda.list, scale.vec = c(1, 0.2))
   # fitTx <- Separate.fit.correct(contam.Tx, contam.Tvax, lambda.list = lambda.list, scale.vec = c(1, 0.2))
   # fitTx.C <- Separate.fit.correct(contam.Tx, contam.Tvax, lambda.list = lambda.list.C, Grho=Grho, scale.vec = c(1, 0.2))

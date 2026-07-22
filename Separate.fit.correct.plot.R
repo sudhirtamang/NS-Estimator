@@ -14,8 +14,8 @@
 
 
 
-Separate.fit.correct = function(x, val = NULL, est.mode = NULL, lambda.vec = NULL, lambda.list = NULL, Omegatilde.list = NULL, scale.vec = NULL, normalize = TRUE, thres = 1.0e-4, maxit = 1e4, njobs = 4,
-                                Grho=NULL) {
+Separate.fit.correct.plot = function(x, val = NULL, est.mode = NULL, lambda.vec = NULL, lambda.list = NULL, Omegatilde.list = NULL, scale.vec = NULL, normalize = TRUE, thres = 1.0e-4, maxit = 1e4, njobs = 4,
+                                Grho=NULL, main=NULL, xlab=NULL, ylab=NULL) {
   
   if (is.null(est.mode) == TRUE) {
     est.mode = c(1:K)
@@ -162,10 +162,7 @@ Separate.fit.correct = function(x, val = NULL, est.mode = NULL, lambda.vec = NUL
           stop(paste("Negative infinite value! Please choose a larger scale for mode", mode_index))
         }
       }
-      # if(mode_index == 1){
-      #   print(loglik2)
-      #   plot(loglik2)
-      # }
+      p
       ind = which.max(loglik2)
       lam.best[mode_index] = lamk[ind] # get the optimal lambda that maximizes the log-likelihood
       loglik[[mode_index]] = loglik2
