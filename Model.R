@@ -6,13 +6,13 @@ Model <- function(n, seed, dimen) {
   
   
   Omega <- purrr::map2(dimen, 1:tensor.order, \(p, i) ChainOmega(p, sd = i*100, norm.type = 2))
-  for(i in seq_along(dimen[2:tensor.order])){
-    Omega[[i+1]] <- diag(dimen[[i + 1]])
-  }
+  # for(i in seq_along(dimen[2:tensor.order])){
+  #   Omega[[i+1]] <- diag(dimen[[i + 1]])
+  # }
   Sigma <- purrr::map(Omega, \(omega) solve(omega))
-  multiples <- purrr::map_dbl(Sigma, \(sigma) sigma[1, 1])
+  # multiples <- purrr::map_dbl(Sigma, \(sigma) sigma[1, 1])
   Sigma <- purrr::map(Sigma, \(sigma) sigma/sigma[1, 1]) # covariance matrix
-  Omega <- purrr::map2(Omega, multiples, \(omega, c) omega*c)
+  # Omega <- purrr::map2(Omega, multiples, \(omega, c) omega*c)
   dSigma <- purrr::map(Sigma, \(sigma) t(chol(sigma))) # square root of covariance matrix
   
   
