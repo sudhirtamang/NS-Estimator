@@ -28,7 +28,7 @@ source("Model.R")
 
 
 
-pctOut <- 0.35
+pctOut <- 0.2
 RUNs <- 100
 # RUNs <- 2
 n <- 50
@@ -179,7 +179,7 @@ for (i in 1:K) {
 }
 
 
-set.seed(1234)
+set.seed(100)
 all.values <- sample(RUNs, 8)
 x.values <- sort(all.values[1:2])
 contam.x.values <- sort(all.values[3:4])
@@ -190,7 +190,7 @@ ylab <- "Log-likelihood"
 
 for(itr in 1:RUNs){
   
-  print(itr)
+  # print(itr)
   data <- Model(n, itr * 123456, dimen)
   x <- data[[1]]$x
   vax <- data[[1]]$vax
@@ -229,27 +229,36 @@ for(itr in 1:RUNs){
   # Tvax <- NSEstimator(vax, dimen)
   Tx <- NSEstimator2(x, dimen)
   Tvax <- NSEstimator2(vax, dimen)
+  
   if(itr %in% x.values){
-    main <- paste0("Clean data, no transformation, no correction at ", itr, " Iteration")
+    png(paste0("Plot", itr, ".png"), width = 800, height = 600)
+    main <- paste0("Clean, no transformation, no correction at ", itr, " Iteration")
     fitx <- Separate.fit.correct.plot(x, vax, lambda.list = lambda.list, main=main, xlab=xlab, ylab=ylab)
+    dev.off()
   } else {
     fitx <- Separate.fit.correct(x, vax, lambda.list = lambda.list)
   }
   if(itr %in% contam.x.values){
-    main <- paste0("Contaminated data, no transformation, no correction at ", itr, " Iteration")
+    png(paste0("Plot", itr, ".png"), width = 800, height = 600)
+    main <- paste0("Contaminated, no transformation, no correction at ", itr, " Iteration")
     contam.fitx <- Separate.fit.correct.plot(contam.x, contam.vax, lambda.list = lambda.list, main=main, xlab=xlab, ylab=ylab)
+    dev.off()
   } else {
     contam.fitx <- Separate.fit.correct(contam.x, contam.vax, lambda.list = lambda.list.C)
   }
   if(itr %in% contam.Tx.values){
-    main <- paste0("Contaminated data, with transformation, no correction at ", itr, " Iteration")
+    png(paste0("Plot", itr, ".png"), width = 800, height = 600)
+    main <- paste0("Contaminated, with transformation, no correction at ", itr, " Iteration")
     contam.fitTx <- Separate.fit.correct.plot(contam.Tx, contam.Tvax, lambda.list = lambda.list, main=main, xlab=xlab, ylab=ylab)
+    dev.off()
   } else {
     contam.fitTx <- Separate.fit.correct(contam.Tx, contam.Tvax, lambda.list = lambda.list.C)
   }
   if(itr %in% contam.Tx.values.C){
-    main <- paste0("Contaminated data, with transformation, with correction at ", itr, " Iteration")
+    png(paste0("Plot", itr, ".png"), width = 800, height = 600)
+    main <- paste0("Contaminated, with transformation, with correction at ", itr, " Iteration")
     contam.fitTx.C <- Separate.fit.correct.plot(contam.Tx, contam.Tvax, lambda.list = lambda.list, main=main, xlab=xlab, ylab=ylab)
+    dev.off()
   } else {
     contam.fitTx.C <- Separate.fit.correct(contam.Tx, contam.Tvax, lambda.list = lambda.list.C, Grho=Grho)
   }
