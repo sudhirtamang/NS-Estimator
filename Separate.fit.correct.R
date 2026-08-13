@@ -134,8 +134,8 @@ Separate.fit.correct = function(x, val = NULL, est.mode = NULL, lambda.vec = NUL
             S.mat[i, j] <- RHOs[[which.min(tmp1)]]
           }
         }
-      }
       S.mat <- as.matrix(Matrix::nearPD(S.mat)$mat)
+      }
       
       if(!is.null(Grho) & k == 1){
         for(i in 1:dimen[[1]]){
@@ -144,8 +144,8 @@ Separate.fit.correct = function(x, val = NULL, est.mode = NULL, lambda.vec = NUL
             testS.mat[i, j] <- RHOs[[which.min(tmp1)]]
           }
         }
-      }
       testS.mat <- as.matrix(Matrix::nearPD(testS.mat)$mat)
+      }
       
       # fit model with a sequence of lambdas
       lamk = lambda.list[[mode_index]] # a sequence of candidates for lambda_k
@@ -208,9 +208,9 @@ Separate.fit.correct = function(x, val = NULL, est.mode = NULL, lambda.vec = NUL
           S.mat[i, j] <- RHOs[[which.min(tmp1)]]
         }
       }
+    S.mat <- as.matrix(Matrix::nearPD(S.mat)$mat)
     }
     
-    S.mat <- as.matrix(Matrix::nearPD(S.mat)$mat)
     Out1 = glasso(S.mat, rho = lam.best[mode_ind], penalize.diagonal = FALSE, maxit = maxit, thr = thres)
     hat_Omega = as.matrix(Out1$wi)
     # normalization
@@ -218,6 +218,7 @@ Separate.fit.correct = function(x, val = NULL, est.mode = NULL, lambda.vec = NUL
       hat_Omega = hat_Omega / norm(hat_Omega, type = "F")
     }
     list(hat_Omega, S.mat)
+  
   }
   stopCluster(c1)
   
