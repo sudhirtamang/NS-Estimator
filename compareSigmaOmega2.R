@@ -28,11 +28,11 @@ source("Model.R")
 
 
 
-pctOut <- 0.2
+pctOut <- 0.15
 RUNs <- 100
 # RUNs <- 2
-n <- 50
-dimen <- c(45, 2)
+n <- 200
+dimen <- c(200, 2)
 # dimen <- c(30, 36, 30)
 nvars <- prod(dimen)
 # dimen <- c(110, 4)
@@ -166,13 +166,13 @@ contam.tnr.Tx.C <- array(0, dim = c(RUNs, d)) # true negative rate for each mode
 
 
 # proper candidates of tuning parameters
-lamseq <- seq(1.5e-3, 1.5e-1, length.out = 300)
+lamseq <- seq(1.5e-6, 1.5, length.out = 3000)
 lambda.list <- list() # a list containing candidates of tuning parameters for each mode
 for (i in 1:K) {
   lambda.list[[i]] <- lamseq
 }
 
-lamseq.C <- seq(1.5e-6, 1, length.out = 300)
+lamseq.C <- seq(1.5e-9, 3, length.out = 3000)
 lambda.list.C <- list() # a list containing candidates of tuning parameters for each mode
 for (i in 1:K) {
   lambda.list.C[[i]] <- lamseq.C
@@ -190,7 +190,7 @@ ylab <- "Log-likelihood"
 
 for(itr in 1:RUNs){
   
-  # print(itr)
+  print(itr)
   data <- Model(n, itr * 123456, dimen)
   x <- data[[1]]$x
   vax <- data[[1]]$vax
@@ -199,7 +199,7 @@ for(itr in 1:RUNs){
   
   nOut <- ceiling(pctOut * n)
   idxcontami <- sample(n, nOut)
-  contami <- rt(nOut*nvars, df=6)
+  contami <- sqrt(2/3) * rt(nOut*nvars, df=6)
   dim(contami) <- c(dimen, nOut)
   
   contam.x <- x[]
@@ -213,7 +213,7 @@ for(itr in 1:RUNs){
   
   
   idxcontami <- sample(n, nOut)
-  contami <- rt(nOut*nvars, df=6)
+  contami <- rt(nOut*nvars, df=3)
   dim(contami) <- c(dimen, nOut)
   
   contam.vax <- vax[]
@@ -231,7 +231,7 @@ for(itr in 1:RUNs){
   Tvax <- NSEstimator2(vax, dimen)
   
   if(itr %in% x.values){
-    png(paste0("Plot", itr, ".png"), width = 800, height = 600)
+    png(paste0("x.Plot", itr, ".png"), width = 800, height = 600)
     main <- paste0("Clean, no transformation, no correction at ", itr, " Iteration")
     fitx <- Separate.fit.correct.plot(x, vax, lambda.list = lambda.list, main=main, xlab=xlab, ylab=ylab)
     dev.off()
@@ -239,7 +239,7 @@ for(itr in 1:RUNs){
     fitx <- Separate.fit.correct(x, vax, lambda.list = lambda.list)
   }
   if(itr %in% contam.x.values){
-    png(paste0("Plot", itr, ".png"), width = 800, height = 600)
+    png(paste0("contam.Plot", itr, ".png"), width = 800, height = 600)
     main <- paste0("Contaminated, no transformation, no correction at ", itr, " Iteration")
     contam.fitx <- Separate.fit.correct.plot(contam.x, contam.vax, lambda.list = lambda.list, main=main, xlab=xlab, ylab=ylab)
     dev.off()
@@ -247,7 +247,7 @@ for(itr in 1:RUNs){
     contam.fitx <- Separate.fit.correct(contam.x, contam.vax, lambda.list = lambda.list.C)
   }
   if(itr %in% contam.Tx.values){
-    png(paste0("Plot", itr, ".png"), width = 800, height = 600)
+    png(paste0("contam.Tx.Plot", itr, ".png"), width = 800, height = 600)
     main <- paste0("Contaminated, with transformation, no correction at ", itr, " Iteration")
     contam.fitTx <- Separate.fit.correct.plot(contam.Tx, contam.Tvax, lambda.list = lambda.list, main=main, xlab=xlab, ylab=ylab)
     dev.off()
@@ -255,7 +255,7 @@ for(itr in 1:RUNs){
     contam.fitTx <- Separate.fit.correct(contam.Tx, contam.Tvax, lambda.list = lambda.list.C)
   }
   if(itr %in% contam.Tx.values.C){
-    png(paste0("Plot", itr, ".png"), width = 800, height = 600)
+    png(paste0("contam.Tx.C.Plot", itr, ".png"), width = 800, height = 600)
     main <- paste0("Contaminated, with transformation, with correction at ", itr, " Iteration")
     contam.fitTx.C <- Separate.fit.correct.plot(contam.Tx, contam.Tvax, lambda.list = lambda.list, main=main, xlab=xlab, ylab=ylab)
     dev.off()
