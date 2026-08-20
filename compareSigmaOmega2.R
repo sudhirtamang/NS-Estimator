@@ -213,7 +213,7 @@ for(itr in 1:RUNs){
   
   
   idxcontami <- sample(n, nOut)
-  contami <- rt(nOut*nvars, df=3)
+  contami <- sqrt(2/3) * rt(nOut*nvars, df=6)
   dim(contami) <- c(dimen, nOut)
   
   contam.vax <- vax[]
