@@ -147,8 +147,11 @@ NSEstimator2 <- function(x, dimen, n){
   return(tmp)
 }
 
-NSEstimator1 <- function(x, n){
-  tmp <- qnorm(rank(x)/(n+1))
+NSEstimator1 <- function(x, dimen, n){
+  tmp <- array(NA, dim(x))
+  for(i in 1:dimen){
+    tmp[i, ] <- qnorm(rank(x[i, ])/(n + 1))
+  }
   return(tmp)
 }
 
