@@ -137,7 +137,7 @@ NSEstimator <- function(x, dimen){
 }
 
 
-NSEstimator2 <- function(x, dimen){
+NSEstimator2 <- function(x, dimen, n){
   tmp <- array(NA, dim(x))
   for(j in 1:dimen[[1]]){
     for(k in 1:dimen[[2]]){
@@ -147,7 +147,10 @@ NSEstimator2 <- function(x, dimen){
   return(tmp)
 }
 
-
+NSEstimator1 <- function(x, n){
+  tmp <- qnorm(rank(x)/(n+1))
+  return(tmp)
+}
 
 # 
 # fold_indices <- caret::createFolds(1:n, k = 5, list = TRUE)
