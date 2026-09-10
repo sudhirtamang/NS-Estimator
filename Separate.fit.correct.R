@@ -63,6 +63,7 @@ Separate.fit.correct = function(x, val = NULL, est.mode = NULL, lambda.vec = NUL
         for (i in 1:n) {
           d = 0
           eval(parse(text = paste("d=x[", paste(rep(",", K), collapse = ""), "i]"))) # assign the ith observation to d
+          if(is.null(dim(d))) dim(d) <- c(length(d), 1)
           Vi = rTensor::k_unfold(rTensor::as.tensor(d), m = k)@data  # unfold tensor
           S.array[, , i] = Vi %*% t(Vi)
         }
@@ -101,6 +102,7 @@ Separate.fit.correct = function(x, val = NULL, est.mode = NULL, lambda.vec = NUL
       for (i in 1:n) {
         d = 0
         eval(parse(text = paste("d=x[", paste(rep(",", K), collapse = ""), "i]"))) # assign the ith observation to d
+        if(is.null(dim(d))) dim(d) <- c(length(d), 1)
         Vi = k_unfold(as.tensor(ttl(as.tensor(d), Omega.list.sqrt,
                                     ms = 1:K
         )@data), m = k)@data
@@ -117,6 +119,7 @@ Separate.fit.correct = function(x, val = NULL, est.mode = NULL, lambda.vec = NUL
       for (i in 1:n_val) {
         d = 0
         eval(parse(text = paste("d=val[", paste(rep(",", K), collapse = ""), "i]")))
+        if(is.null(dim(d))) dim(d) <- c(length(d), 1)
         Vi = k_unfold(as.tensor(ttl(as.tensor(d), Omega.list.sqrt,
                                     ms = 1:K
         )@data), m = k)@data
@@ -193,6 +196,7 @@ Separate.fit.correct = function(x, val = NULL, est.mode = NULL, lambda.vec = NUL
     for (i in 1:n) {
       d = 0
       eval(parse(text = paste("d=x[", paste(rep(",", K), collapse = ""), "i]")))
+      if(is.null(dim(d))) dim(d) <- c(length(d), 1)
       Vi = k_unfold(as.tensor(ttl(as.tensor(d), Omega.list.sqrt,
                                   ms = 1:K
       )@data), m = k)@data

@@ -28,7 +28,7 @@ source("Model.R")
 
 
 
-pctOut <- 0
+pctOut <- 0.5
 RUNs <- 100
 # RUNs <- 2
 n <- 50
