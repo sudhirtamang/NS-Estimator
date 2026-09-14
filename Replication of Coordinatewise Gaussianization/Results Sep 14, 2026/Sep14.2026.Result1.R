@@ -212,79 +212,187 @@ doSimulation2 <- function(Grho, is.corrected, isNS.transform, lower, p, n, R, p_
 
 
 RUNs <- 100
+p <- 120
+n <- 200
+
+# ================================K-Tau========================>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+p_conta <- 0
+doSimulation2(Grho, FALSE, FALSE, lower = 0.01, p = p, n=n, R=RUNs, p_conta=p_conta, robust_KTau, generate_sparse_omega, medDev,
+              rmvnorm_precision_n, TPrate, TNrate, FNrate, FPrate,
+              paste0("===================================== START:::::::::", p_conta*100,  "% cellwise n = ", n, " p = ", p,
+                     " Kendall, SPARSE", "With ", RUNs, " Replications"),
+              paste0("===================================== END:::::::::::", p_conta*100,  "% cellwise n = ", n, " p = ", p,
+                     " Kendall, SPARSE", "With ", RUNs, " Replications")
+)
 p_conta <- 0.05
-p <- 120
-n <- 200
-cat(paste0("Simulation for ", p_conta*100, "% Contamination!!!!!!!!!!!!!!\n\n"), end="\n")
-doSimulation2(Grho, FALSE, FALSE, lower = 0.01, p = p, n=n, R=RUNs, p_conta=p_conta, sampleCOVest, generate_sparse_omega, medDev,
-              rmvnorm_precision_n, TPrate, TNrate, FNrate, FPrate,
-              paste0("===================================== START:::::::::", p_conta*100,  "% cellwise n = ", n, " p = ", p,
-                     " SampleCov, SPARSE: ChainOmega", "With ", RUNs, " Replications"),
-              paste0("===================================== END:::::::::::", p_conta*100,  "% cellwise n = ", n, " p = ", p,
-                     " SampleCov, SPARSE: ChainOmega", "With ", RUNs, " Replications")
-)
-
 doSimulation2(Grho, FALSE, FALSE, lower = 0.01, p = p, n=n, R=RUNs, p_conta=p_conta, robust_KTau, generate_sparse_omega, medDev,
               rmvnorm_precision_n, TPrate, TNrate, FNrate, FPrate,
               paste0("===================================== START:::::::::", p_conta*100,  "% cellwise n = ", n, " p = ", p,
-                     " Kendall, SPARSE: ChainOmega", "With ", RUNs, " Replications"),
+                     " Kendall, SPARSE", "With ", RUNs, " Replications"),
               paste0("===================================== END:::::::::::", p_conta*100,  "% cellwise n = ", n, " p = ", p,
-                     " Kendall, SPARSE: ChainOmega", "With ", RUNs, " Replications")
+                     " Kendall, SPARSE", "With ", RUNs, " Replications")
 )
-
-cat("Now for the transformed Data!\n\n")
-doSimulation2(Grho, FALSE, TRUE, lower = 0.01, p = p, n=n, R=RUNs, p_conta=p_conta, sampleCOVest, generate_sparse_omega, medDev,
-              rmvnorm_precision_n, TPrate, TNrate, FNrate, FPrate,
-              paste0("===================================== START:::::::::", p_conta*100,  "% cellwise n = ", n, " p = ", p,
-                     " SampleCov.T, SPARSE: ChainOmega", "With ", RUNs, " Replications"),
-              paste0("===================================== END:::::::::::", p_conta*100,  "% cellwise n = ", n, " p = ", p,
-                     " SampleCov.T, SPARSE: ChainOmega", "With ", RUNs, " Replications")
-)
-
-cat("Now for the transformed and corrected Data!\n\n")
-doSimulation2(Grho, TRUE, TRUE, lower = 0.01, p = p, n=n, R=RUNs, p_conta=p_conta, sampleCOVest, generate_sparse_omega, medDev,
-              rmvnorm_precision_n, TPrate, TNrate, FNrate, FPrate,
-              paste0("===================================== START:::::::::", p_conta*100,  "% cellwise n = ", n, " p = ", p,
-                     " SampleCov.T.C, SPARSE: ChainOmega", "With ", RUNs, " Replications"),
-              paste0("===================================== END:::::::::::", p_conta*100,  "% cellwise n = ", n, " p = ", p,
-                     " SampleCov.T.C, SPARSE: ChainOmega", "With ", RUNs, " Replications")
-)
-
-cat("\n\n\n\n\n\n")
-p <- 120
-n <- 200
 p_conta <- 0.1
-cat(paste0("Simulation for ", p_conta*100, "% Contamination!!!!!!!!!!!!!!\n\n"), end="\n")
-doSimulation2(Grho, FALSE, FALSE, lower = 0.01, p = p, n=n, R=RUNs, p_conta=p_conta, sampleCOVest, generate_sparse_omega, medDev,
-              rmvnorm_precision_n, TPrate, TNrate, FNrate, FPrate,
-              paste0("===================================== START:::::::::", p_conta*100,  "% cellwise n = ", n, " p = ", p,
-                     "SampleCov, SPARSE: ChainOmega", "With ", RUNs, " Replications"),
-              paste0("===================================== END:::::::::::", p_conta*100,  "% cellwise n = ", n, " p = ", p,
-                     "SampleCov, SPARSE: ChainOmega", "With ", RUNs, " Replications")
-)
-
 doSimulation2(Grho, FALSE, FALSE, lower = 0.01, p = p, n=n, R=RUNs, p_conta=p_conta, robust_KTau, generate_sparse_omega, medDev,
               rmvnorm_precision_n, TPrate, TNrate, FNrate, FPrate,
               paste0("===================================== START:::::::::", p_conta*100,  "% cellwise n = ", n, " p = ", p,
-                     "Kendall, SPARSE: ChainOmega", "With ", RUNs, " Replications"),
+                     " Kendall, SPARSE", "With ", RUNs, " Replications"),
               paste0("===================================== END:::::::::::", p_conta*100,  "% cellwise n = ", n, " p = ", p,
-                     "Kendall, SPARSE: ChainOmega", "With ", RUNs, " Replications")
+                     " Kendall, SPARSE", "With ", RUNs, " Replications")
 )
+p_conta <- 0
+doSimulation2(Grho, FALSE, FALSE, lower = 0.01, p = p, n=n, R=RUNs, p_conta=p_conta, robust_KTau, generate_dense_omega, medDev,
+              rmvnorm_precision_n, TPrate, TNrate, FNrate, FPrate,
+              paste0("===================================== START:::::::::", p_conta*100,  "% cellwise n = ", n, " p = ", p,
+                     " Kendall, DENSE", "With ", RUNs, " Replications"),
+              paste0("===================================== END:::::::::::", p_conta*100,  "% cellwise n = ", n, " p = ", p,
+                     " Kendall, DENSE", "With ", RUNs, " Replications")
+)
+p_conta <- 0.05
+doSimulation2(Grho, FALSE, FALSE, lower = 0.01, p = p, n=n, R=RUNs, p_conta=p_conta, robust_KTau, generate_dense_omega, medDev,
+              rmvnorm_precision_n, TPrate, TNrate, FNrate, FPrate,
+              paste0("===================================== START:::::::::", p_conta*100,  "% cellwise n = ", n, " p = ", p,
+                     " Kendall, DEENSE", "With ", RUNs, " Replications"),
+              paste0("===================================== END:::::::::::", p_conta*100,  "% cellwise n = ", n, " p = ", p,
+                     " Kendall, DEENSE", "With ", RUNs, " Replications")
+)
+p_conta <- 0.1
+doSimulation2(Grho, FALSE, FALSE, lower = 0.01, p = p, n=n, R=RUNs, p_conta=p_conta, robust_KTau, generate_dense_omega, medDev,
+              rmvnorm_precision_n, TPrate, TNrate, FNrate, FPrate,
+              paste0("===================================== START:::::::::", p_conta*100,  "% cellwise n = ", n, " p = ", p,
+                     " Kendall, DEENSE", "With ", RUNs, " Replications"),
+              paste0("===================================== END:::::::::::", p_conta*100,  "% cellwise n = ", n, " p = ", p,
+                     " Kendall, DEENSE", "With ", RUNs, " Replications")
+)
+# ===================================K-Tau=====================>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+# ================================Sample Cov========================>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+p_conta <- 0
+doSimulation2(Grho, FALSE, FALSE, lower = 0.01, p = p, n=n, R=RUNs, p_conta=p_conta, sampleCOVest, generate_sparse_omega, medDev,
+              rmvnorm_precision_n, TPrate, TNrate, FNrate, FPrate,
+              paste0("===================================== START:::::::::", p_conta*100,  "% cellwise n = ", n, " p = ", p,
+                     " SampleCov, SPARSE", "With ", RUNs, " Replications"),
+              paste0("===================================== END:::::::::::", p_conta*100,  "% cellwise n = ", n, " p = ", p,
+                     " SampleCov, SPARSE", "With ", RUNs, " Replications")
+)
+p_conta <- 0.05
+doSimulation2(Grho, FALSE, FALSE, lower = 0.01, p = p, n=n, R=RUNs, p_conta=p_conta, sampleCOVest, generate_sparse_omega, medDev,
+              rmvnorm_precision_n, TPrate, TNrate, FNrate, FPrate,
+              paste0("===================================== START:::::::::", p_conta*100,  "% cellwise n = ", n, " p = ", p,
+                     " SampleCov, SPARSE", "With ", RUNs, " Replications"),
+              paste0("===================================== END:::::::::::", p_conta*100,  "% cellwise n = ", n, " p = ", p,
+                     " SampleCov, SPARSE", "With ", RUNs, " Replications")
+)
+p_conta <- 0.1
+doSimulation2(Grho, FALSE, FALSE, lower = 0.01, p = p, n=n, R=RUNs, p_conta=p_conta, sampleCOVest, generate_sparse_omega, medDev,
+              rmvnorm_precision_n, TPrate, TNrate, FNrate, FPrate,
+              paste0("===================================== START:::::::::", p_conta*100,  "% cellwise n = ", n, " p = ", p,
+                     " SampleCov, SPARSE", "With ", RUNs, " Replications"),
+              paste0("===================================== END:::::::::::", p_conta*100,  "% cellwise n = ", n, " p = ", p,
+                     " SampleCov, SPARSE", "With ", RUNs, " Replications")
+)
+p_conta <- 0
+doSimulation2(Grho, FALSE, FALSE, lower = 0.01, p = p, n=n, R=RUNs, p_conta=p_conta, sampleCOVest, generate_dense_omega, medDev,
+              rmvnorm_precision_n, TPrate, TNrate, FNrate, FPrate,
+              paste0("===================================== START:::::::::", p_conta*100,  "% cellwise n = ", n, " p = ", p,
+                     " SampleCov, DEENSE", "With ", RUNs, " Replications"),
+              paste0("===================================== END:::::::::::", p_conta*100,  "% cellwise n = ", n, " p = ", p,
+                     " SampleCov, DEENSE", "With ", RUNs, " Replications")
+)
+p_conta <- 0.05
+doSimulation2(Grho, FALSE, FALSE, lower = 0.01, p = p, n=n, R=RUNs, p_conta=p_conta, sampleCOVest, generate_dense_omega, medDev,
+              rmvnorm_precision_n, TPrate, TNrate, FNrate, FPrate,
+              paste0("===================================== START:::::::::", p_conta*100,  "% cellwise n = ", n, " p = ", p,
+                     " SampleCov, DEENSE", "With ", RUNs, " Replications"),
+              paste0("===================================== END:::::::::::", p_conta*100,  "% cellwise n = ", n, " p = ", p,
+                     " SampleCov, DEENSE", "With ", RUNs, " Replications")
+)
+p_conta <- 0.1
+doSimulation2(Grho, FALSE, FALSE, lower = 0.01, p = p, n=n, R=RUNs, p_conta=p_conta, sampleCOVest, generate_dense_omega, medDev,
+              rmvnorm_precision_n, TPrate, TNrate, FNrate, FPrate,
+              paste0("===================================== START:::::::::", p_conta*100,  "% cellwise n = ", n, " p = ", p,
+                     " SampleCov, DEENSE", "With ", RUNs, " Replications"),
+              paste0("===================================== END:::::::::::", p_conta*100,  "% cellwise n = ", n, " p = ", p,
+                     " SampleCov, DEENSE", "With ", RUNs, " Replications")
+)
+# ===================================Sample Cov=====================>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
-cat("Now for the transformed Data!\n\n")
+
+
+# ================================Sample Cov Transformed========================>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+p_conta <- 0
 doSimulation2(Grho, FALSE, TRUE, lower = 0.01, p = p, n=n, R=RUNs, p_conta=p_conta, sampleCOVest, generate_sparse_omega, medDev,
               rmvnorm_precision_n, TPrate, TNrate, FNrate, FPrate,
               paste0("===================================== START:::::::::", p_conta*100,  "% cellwise n = ", n, " p = ", p,
-                     "SampleCov.T, SPARSE: ChainOmega", "With ", RUNs, " Replications"),
+                     " SampleCov Transformed, SPARSE", "With ", RUNs, " Replications"),
               paste0("===================================== END:::::::::::", p_conta*100,  "% cellwise n = ", n, " p = ", p,
-                     "SampleCov.T, SPARSE: ChainOmega", "With ", RUNs, " Replications")
+                     " SampleCov Transformed, SPARSE", "With ", RUNs, " Replications")
 )
-
-cat("Now for the transformed and corrected Data!\n\n")
-doSimulation2(Grho, TRUE, TRUE, lower = 0.01, p = p, n=n, R=RUNs, p_conta=p_conta, sampleCOVest, generate_sparse_omega, medDev,
+p_conta <- 0.05
+doSimulation2(Grho, FALSE, TRUE, lower = 0.01, p = p, n=n, R=RUNs, p_conta=p_conta, sampleCOVest, generate_sparse_omega, medDev,
               rmvnorm_precision_n, TPrate, TNrate, FNrate, FPrate,
               paste0("===================================== START:::::::::", p_conta*100,  "% cellwise n = ", n, " p = ", p,
-                     "SampleCov.T.C, SPARSE: ChainOmega", "With ", RUNs, " Replications"),
+                     " SampleCov Transformed, SPARSE", "With ", RUNs, " Replications"),
               paste0("===================================== END:::::::::::", p_conta*100,  "% cellwise n = ", n, " p = ", p,
-                     "SampleCov.T.C, SPARSE: ChainOmega", "With ", RUNs, " Replications")
+                     " SampleCov Transformed, SPARSE", "With ", RUNs, " Replications")
 )
+p_conta <- 0.1
+doSimulation2(Grho, FALSE, TRUE, lower = 0.01, p = p, n=n, R=RUNs, p_conta=p_conta, sampleCOVest, generate_sparse_omega, medDev,
+              rmvnorm_precision_n, TPrate, TNrate, FNrate, FPrate,
+              paste0("===================================== START:::::::::", p_conta*100,  "% cellwise n = ", n, " p = ", p,
+                     " SampleCov Transformed, SPARSE", "With ", RUNs, " Replications"),
+              paste0("===================================== END:::::::::::", p_conta*100,  "% cellwise n = ", n, " p = ", p,
+                     " SampleCov Transformed, SPARSE", "With ", RUNs, " Replications")
+)
+p_conta <- 0
+doSimulation2(Grho, FALSE, TRUE, lower = 0.01, p = p, n=n, R=RUNs, p_conta=p_conta, sampleCOVest, generate_dense_omega, medDev,
+              rmvnorm_precision_n, TPrate, TNrate, FNrate, FPrate,
+              paste0("===================================== START:::::::::", p_conta*100,  "% cellwise n = ", n, " p = ", p,
+                     " SampleCov Transformed, DEENSE", "With ", RUNs, " Replications"),
+              paste0("===================================== END:::::::::::", p_conta*100,  "% cellwise n = ", n, " p = ", p,
+                     " SampleCov Transformed, DEENSE", "With ", RUNs, " Replications")
+)
+p_conta <- 0.05
+doSimulation2(Grho, FALSE, TRUE, lower = 0.01, p = p, n=n, R=RUNs, p_conta=p_conta, sampleCOVest, generate_dense_omega, medDev,
+              rmvnorm_precision_n, TPrate, TNrate, FNrate, FPrate,
+              paste0("===================================== START:::::::::", p_conta*100,  "% cellwise n = ", n, " p = ", p,
+                     " SampleCov Transformed, DEENSE", "With ", RUNs, " Replications"),
+              paste0("===================================== END:::::::::::", p_conta*100,  "% cellwise n = ", n, " p = ", p,
+                     " SampleCov Transformed, DEENSE", "With ", RUNs, " Replications")
+)
+p_conta <- 0.1
+doSimulation2(Grho, FALSE, TRUE, lower = 0.01, p = p, n=n, R=RUNs, p_conta=p_conta, sampleCOVest, generate_dense_omega, medDev,
+              rmvnorm_precision_n, TPrate, TNrate, FNrate, FPrate,
+              paste0("===================================== START:::::::::", p_conta*100,  "% cellwise n = ", n, " p = ", p,
+                     " SampleCov Transformed, DEENSE", "With ", RUNs, " Replications"),
+              paste0("===================================== END:::::::::::", p_conta*100,  "% cellwise n = ", n, " p = ", p,
+                     " SampleCov Transformed, DEENSE", "With ", RUNs, " Replications")
+)
+# ===================================Sample Cov Transformed=====================>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -77,7 +77,7 @@ doSimulation2 <- function(Grho, is.corrected, isNS.transform, lower, p, n, R, p_
     }
     
     if(isNS.transform){
-      for(i in 1:p){
+      for(i in 1:pR
         data[, i] <- qnorm(rank(data[, i])/(n + 1))
       }
     }
@@ -178,32 +178,32 @@ doSimulation2 <- function(Grho, is.corrected, isNS.transform, lower, p, n, R, p_
   stopCluster(c1)
   cat( text1,
        "\n", paste(p_conta*100, "%", sep=""), "Max infinity norm Sigma: ", mean(map_dbl(Results, \(x) x[["MAXInfSigma"]]))
-       ,paste0("(", formatC(sd(map_dbl(Results, \(x) x[["MAXInfSigma"]]))/sqrt(RUNs), format="e", digits=5), ")")
+       ,paste0("(", formatC(sd(map_dbl(Results, \(x) x[["MAXInfSigma"]]))/sqrt(R), format="e", digits=5), ")")
        
        ,"\n", paste(p_conta*100, "%", sep=""), "Frob. Norm Sigma: ", mean(map_dbl(Results, \(x) x[["ForbNormSigma"]]))
-       ,paste0("(", formatC(sd(map_dbl(Results, \(x) x[["ForbNormSigma"]]))/sqrt(RUNs), format="e", digits=5), ")")
+       ,paste0("(", formatC(sd(map_dbl(Results, \(x) x[["ForbNormSigma"]]))/sqrt(R), format="e", digits=5), ")")
        
        ,"\n", paste(p_conta*100, "%", sep=""), "Max infinity norm Omega: ", mean(map_dbl(Results, \(x) x[["MAXInfOmega"]]))
-       ,paste0("(", formatC(sd(map_dbl(Results, \(x) x[["MAXInfOmega"]]))/sqrt(RUNs), format="e", digits=5), ")")
+       ,paste0("(", formatC(sd(map_dbl(Results, \(x) x[["MAXInfOmega"]]))/sqrt(R), format="e", digits=5), ")")
        
        ,"\n", paste(p_conta*100, "%", sep=""), "Frob. Norm Omega: ", mean(map_dbl(Results, \(x) x[["ForbNormOmega"]]))
-       ,paste0("(" , formatC(sd(map_dbl(Results, \(x) x[["ForbNormOmega"]]))/sqrt(RUNs), format="e", digits=5), ")")
+       ,paste0("(" , formatC(sd(map_dbl(Results, \(x) x[["ForbNormOmega"]]))/sqrt(R), format="e", digits=5), ")")
        
        
        ,"\n", paste(p_conta*100, "%", sep=""), "contamination FP: ", mean(map_dbl(Results, \(x) x[["FP"]]))
-       ,paste0("(", formatC(sd(map_dbl(Results, \(x) x[["FP"]]))/sqrt(RUNs), format="e", digits=5), ")")
+       ,paste0("(", formatC(sd(map_dbl(Results, \(x) x[["FP"]]))/sqrt(R), format="e", digits=5), ")")
        
        
        ,"\n", paste(p_conta*100, "%", sep=""), "contamination FN: ", mean(map_dbl(Results, \(x) x[["FN"]]))
-       ,paste0("(", formatC(sd(map_dbl(Results, \(x) x[["FN"]]))/sqrt(RUNs), format="e", digits=5), ")")
+       ,paste0("(", formatC(sd(map_dbl(Results, \(x) x[["FN"]]))/sqrt(R), format="e", digits=5), ")")
        
        
        ,"\n", paste(p_conta*100, "%", sep=""), "contamination TP: ", mean(map_dbl(Results, \(x) x[["TP"]]))
-       ,paste0("(", formatC(sd(map_dbl(Results, \(x) x[["TP"]]))/sqrt(RUNs), format="e", digits=5), ")")
+       ,paste0("(", formatC(sd(map_dbl(Results, \(x) x[["TP"]]))/sqrt(R), format="e", digits=5), ")")
        
        
        ,"\n", paste(p_conta*100, "%", sep=""), "contamination TN: ", mean(map_dbl(Results, \(x) x[["TN"]]))
-       ,paste0("(", formatC(sd(map_dbl(Results, \(x) x[["TN"]]))/sqrt(RUNs), format="e", digits=5), ")"),  "\n",
+       ,paste0("(", formatC(sd(map_dbl(Results, \(x) x[["TN"]]))/sqrt(R), format="e", digits=5), ")"),  "\n",
        text2, "\n"
   )
 }
