@@ -1,0 +1,120 @@
+===================================== Alternate t-dist START ::::::::: 0% cellwise n = 200 p = 120 Kendall, BANDED With 100 Replications 
+ 0% Max infinity norm Sigma:  0.9932941 (1.31509e-02) 
+ 0% Frob. Norm Sigma:  12.33956 (2.80361e-02) 
+ 0% Max infinity norm Omega:  1.489037 (4.21915e-03) 
+ 0% Frob. Norm Omega:  25.18354 (2.13825e-02) 
+ 0% contamination FP:  0 (0.00000e+00) 
+ 0% contamination FN:  0.900925 (1.52692e-03) 
+ 0% contamination TP:  0.099075 (1.52692e-03) 
+ 0% contamination TN:  0 (0.00000e+00) 
+ ===================================== Alternate t-dist END ::::::::::: 0% cellwise n = 200 p = 120 Kendall, BANDED With 100 Replications 
+===================================== Alternate t-dist START ::::::::: 0% cellwise n = 200 p = 120 Kendall, SPARSE With 100 Replications 
+ 0% Max infinity norm Sigma:  1.013057 (1.55211e-02) 
+ 0% Frob. Norm Sigma:  13.1993 (1.07284e-01) 
+ 0% Max infinity norm Omega:  3.14602 (8.12390e-02) 
+ 0% Frob. Norm Omega:  14.45711 (1.15943e-01) 
+ 0% contamination FP:  0.169936 (2.18997e-03) 
+ 0% contamination FN:  0.1995619 (3.72819e-03) 
+ 0% contamination TP:  0.8004381 (3.72819e-03) 
+ 0% contamination TN:  0.830064 (2.18997e-03) 
+ ===================================== Alternate t-dist END ::::::::::: 0% cellwise n = 200 p = 120 Kendall, SPARSE With 100 Replications 
+===================================== Alternate t-dist START::::::::: 0% cellwise n = 200 p = 120 Kendall, DENSE With 100 Replications 
+ 0% Max infinity norm Sigma:  0.9866577 (1.34410e-02) 
+ 0% Frob. Norm Sigma:  12.23299 (2.62661e-02) 
+ 0% Max infinity norm Omega:  1.477759 (3.31868e-03) 
+ 0% Frob. Norm Omega:  119.2304 (1.41847e-03) 
+ 0% contamination FP:  0 (0.00000e+00) 
+ 0% contamination FN:  0.9913444 (7.88615e-05) 
+ 0% contamination TP:  0.008655556 (7.88615e-05) 
+ 0% contamination TN:  0 (0.00000e+00) 
+ ===================================== Alternate t-dist END::::::::::: 0% cellwise n = 200 p = 120 Kendall, DENSE With 100 Replications 
+===================================== Alternate t-dist START::::::::: 0% cellwise n = 200 p = 120 Kendall, DIAGONAL With 100 Replications 
+ 0% Max infinity norm Sigma:  1.003263 (1.26385e-02) 
+ 0% Frob. Norm Sigma:  12.19787 (2.63601e-02) 
+ 0% Max infinity norm Omega:  0.5051399 (3.84392e-03) 
+ 0% Frob. Norm Omega:  2.722515 (1.01408e-02) 
+ 0% contamination FP:  0.0003291317 (1.01434e-04) 
+ 0% contamination FN:  0 (0.00000e+00) 
+ 0% contamination TP:  1 (0.00000e+00) 
+ 0% contamination TN:  0.9996709 (1.01434e-04) 
+ ===================================== Alternate t-dist END::::::::::: 0% cellwise n = 200 p = 120 Kendall, DIAGONAL With 100 Replications 
+===================================== Alternate t-dist START::::::::: 0% cellwise n = 200 p = 120 SampleCov, BANDED With 100 Replications 
+ 0% Max infinity norm Sigma:  17.94107 (2.50415e+00) 
+ 0% Frob. Norm Sigma:  41.6719 (2.07427e+00) 
+ 0% Max infinity norm Omega:  2.018039 (4.81395e-03) 
+ 0% Frob. Norm Omega:  30.21466 (2.00957e-02) 
+ 0% contamination FP:  0 (0.00000e+00) 
+ 0% contamination FN:  0.9271472 (1.91843e-03) 
+ 0% contamination TP:  0.07285278 (1.91843e-03) 
+ 0% contamination TN:  0 (0.00000e+00) 
+ ===================================== Alternate t-dist END::::::::::: 0% cellwise n = 200 p = 120 SampleCov, BANDED With 100 Replications 
+===================================== Alternate t-dist START::::::::: 0% cellwise n = 200 p = 120 SampleCov, SPARSE With 100 Replications 
+ 0% Max infinity norm Sigma:  15.09113 (1.23866e+00) 
+ 0% Frob. Norm Sigma:  42.41633 (8.52803e-01) 
+ 0% Max infinity norm Omega:  4.295442 (7.56440e-02) 
+ 0% Frob. Norm Omega:  20.87976 (1.47628e-01) 
+ 0% contamination FP:  0.1352215 (2.33358e-03) 
+ 0% contamination FN:  0.3864196 (6.89295e-03) 
+ 0% contamination TP:  0.6135804 (6.89295e-03) 
+ 0% contamination TN:  0.8647785 (2.33358e-03) 
+ ===================================== Alternate t-dist END::::::::::: 0% cellwise n = 200 p = 120 SampleCov, SPARSE With 100 Replications 
+===================================== Alternate t-dist START::::::::: 0% cellwise n = 200 p = 120 SampleCov, DENSE With 100 Replications 
+ 0% Max infinity norm Sigma:  15.99652 (1.71840e+00) 
+ 0% Frob. Norm Sigma:  39.41986 (1.40166e+00) 
+ 0% Max infinity norm Omega:  1.89692 (4.18518e-03) 
+ 0% Frob. Norm Omega:  119.8021 (1.45728e-03) 
+ 0% contamination FP:  0 (0.00000e+00) 
+ 0% contamination FN:  0.9914306 (3.96048e-05) 
+ 0% contamination TP:  0.008569444 (3.96048e-05) 
+ 0% contamination TN:  0 (0.00000e+00) 
+ ===================================== Alternate t-dist END::::::::::: 0% cellwise n = 200 p = 120 SampleCov, DENSE With 100 Replications 
+===================================== Alternate t-dist START::::::::: 0% cellwise n = 200 p = 120 SampleCov, DIAGONAL With 100 Replications 
+ 0% Max infinity norm Sigma:  21.64289 (3.19680e+00) 
+ 0% Frob. Norm Sigma:  43.96239 (2.75387e+00) 
+ 0% Max infinity norm Omega:  0.9186398 (4.30737e-03) 
+ 0% Frob. Norm Omega:  6.841568 (1.10500e-02) 
+ 0% contamination FP:  0.0002240896 (5.05567e-05) 
+ 0% contamination FN:  0 (0.00000e+00) 
+ 0% contamination TP:  1 (0.00000e+00) 
+ 0% contamination TN:  0.9997759 (5.05567e-05) 
+ ===================================== Alternate t-dist END::::::::::: 0% cellwise n = 200 p = 120 SampleCov, DIAGONAL With 100 Replications 
+===================================== Alternate t-dist START::::::::: 0% cellwise n = 200 p = 120 SampleCov Transf, BANDED With 100 Replications 
+ 0% Max infinity norm Sigma:  0.2631537 (1.86572e-03) 
+ 0% Frob. Norm Sigma:  8.215848 (8.84554e-03) 
+ 0% Max infinity norm Omega:  1.174683 (3.00894e-03) 
+ 0% Frob. Norm Omega:  23.42172 (3.59486e-02) 
+ 0% contamination FP:  0 (0.00000e+00) 
+ 0% contamination FN:  0.9183222 (2.85329e-03) 
+ 0% contamination TP:  0.08167778 (2.85329e-03) 
+ 0% contamination TN:  0 (0.00000e+00) 
+ ===================================== Alternate t-dist END::::::::::: 0% cellwise n = 200 p = 120 SampleCov Transf, BANDED With 100 Replications 
+===================================== Alternate t-dist START::::::::: 0% cellwise n = 200 p = 120 SampleCov Transf, SPARSE With 100 Replications 
+ 0% Max infinity norm Sigma:  0.2739591 (2.17945e-03) 
+ 0% Frob. Norm Sigma:  8.645444 (3.32288e-02) 
+ 0% Max infinity norm Omega:  2.712443 (7.94657e-02) 
+ 0% Frob. Norm Omega:  12.12777 (1.06551e-01) 
+ 0% contamination FP:  0.1963513 (1.80992e-03) 
+ 0% contamination FN:  0.1708206 (2.79421e-03) 
+ 0% contamination TP:  0.8291794 (2.79421e-03) 
+ 0% contamination TN:  0.8036487 (1.80992e-03) 
+ ===================================== Alternate t-dist END::::::::::: 0% cellwise n = 200 p = 120 SampleCov Transf, SPARSE With 100 Replications 
+===================================== Alternate t-dist START::::::::: 0% cellwise n = 200 p = 120 SampleCov Transf, DENSE With 100 Replications 
+ 0% Max infinity norm Sigma:  0.2629113 (1.96830e-03) 
+ 0% Frob. Norm Sigma:  8.139846 (6.81333e-03) 
+ 0% Max infinity norm Omega:  0.9978741 (2.18895e-03) 
+ 0% Frob. Norm Omega:  118.9592 (1.70514e-04) 
+ 0% contamination FP:  0 (0.00000e+00) 
+ 0% contamination FN:  0.9913931 (1.33619e-04) 
+ 0% contamination TP:  0.008606944 (1.33619e-04) 
+ 0% contamination TN:  0 (0.00000e+00) 
+ ===================================== Alternate t-dist END::::::::::: 0% cellwise n = 200 p = 120 SampleCov Transf, DENSE With 100 Replications 
+===================================== Alternate t-dist START::::::::: 0% cellwise n = 200 p = 120 SampleCov Transf, DIAGONAL With 100 Replications 
+ 0% Max infinity norm Sigma:  0.2636239 (1.90841e-03) 
+ 0% Frob. Norm Sigma:  8.141739 (6.98337e-03) 
+ 0% Max infinity norm Omega:  0.04796694 (1.61874e-03) 
+ 0% Frob. Norm Omega:  0.4648696 (2.01911e-03) 
+ 0% contamination FP:  0.0003711485 (1.14829e-04) 
+ 0% contamination FN:  0 (0.00000e+00) 
+ 0% contamination TP:  1 (0.00000e+00) 
+ 0% contamination TN:  0.9996289 (1.14829e-04) 
+ ===================================== Alternate t-dist END::::::::::: 0% cellwise n = 200 p = 120 SampleCov Transf, DIAGONAL With 100 Replications 
